@@ -326,15 +326,15 @@ export class PomodoroManager {
   }
 
   updateSettings(settings) {
-    // Update timer durations
+    // Update timer durations (convert minutes to seconds)
     if (settings.workDuration) {
-      this.timer.workDuration = settings.workDuration;
+      this.timer.workDuration = settings.workDuration * 60;
     }
     if (settings.shortBreak) {
-      this.timer.shortBreakDuration = settings.shortBreak;
+      this.timer.shortBreakDuration = settings.shortBreak * 60;
     }
     if (settings.longBreak) {
-      this.timer.longBreakDuration = settings.longBreak;
+      this.timer.longBreakDuration = settings.longBreak * 60;
     }
     if (settings.sessionsUntilLongBreak) {
       this.timer.sessionsUntilLongBreak = settings.sessionsUntilLongBreak;
@@ -351,6 +351,12 @@ export class PomodoroManager {
     }
     if (settings.autoStartWork !== undefined) {
       this.timer.autoStartWork = settings.autoStartWork;
+    }
+    
+    // Reset timer to new duration if not running
+    if (!this.timer.isRunning) {
+      this.timer.currentTime = this.timer.getCurrentSessionDuration();
+      this.updateUI();
     }
     
     this.logger.log('Pomodoro settings updated');

@@ -38,19 +38,21 @@ export class WaifuApp {
     // Quote timer for random quotes
     this.quoteTimer = null;
     
-    // Set up UI elements
-    this.affectionManager.setUIElements(
-      document.getElementById('affection-fill'),
-      document.getElementById('affection-text')
-    );
+    // Set up UI elements with null checks
+    const affectionFill = document.getElementById('affection-fill');
+    const affectionText = document.getElementById('affection-text');
+    if (affectionFill && affectionText) {
+      this.affectionManager.setUIElements(affectionFill, affectionText);
+    }
     
-    this.todoManager.setUIElements(
-      document.getElementById('todo-list'),
-      document.getElementById('task-count')
-    );
+    const todoList = document.getElementById('todo-list');
+    const taskCount = document.getElementById('task-count');
+    if (todoList && taskCount) {
+      this.todoManager.setUIElements(todoList, taskCount);
+    }
     
-    // Set up Pomodoro UI elements
-    this.pomodoroManager.setUIElements({
+    // Set up Pomodoro UI elements with null checks
+    const pomodoroElements = {
       timerDisplay: document.getElementById('timer-time'),
       sessionDisplay: document.getElementById('timer-session'),
       progressBar: document.getElementById('timer-fill'),
@@ -63,7 +65,14 @@ export class WaifuApp {
         totalSessions: document.getElementById('total-sessions'),
         productiveTime: document.getElementById('productive-time')
       }
-    });
+    };
+    
+    // Only set UI elements if they exist
+    if (Object.values(pomodoroElements).every(Boolean)) {
+      this.pomodoroManager.setUIElements(pomodoroElements);
+    } else {
+      this.logger.warn('Some Pomodoro UI elements are missing');
+    }
     
     this.setupEventHandlers();
   }
@@ -85,7 +94,7 @@ export class WaifuApp {
         this.pomodoroManager.load()
       ]);
       
-      // Set up settings integration
+      // Set up settings integration (this applies loaded settings)
       this.setupSettingsIntegration();
       
       // Start waifu cycling - DISABLED
@@ -93,8 +102,8 @@ export class WaifuApp {
       // Ensure cycling is stopped
       this.waifuManager.stopCycling();
       
-      // Start quote system
-      this.startQuoteSystem();
+      // Note: Quote system is started conditionally in setupSettingsIntegration() -> applySettings()
+      // Don't start it here unconditionally
       
       // Set up storage sync
       this.setupStorageSync();
@@ -115,19 +124,25 @@ export class WaifuApp {
   }
 
   setupEventHandlers() {
-    // Add todo button
-    document.getElementById('add-todo-btn').addEventListener('click', () => {
-      this.addTodo();
-    });
-    
-    // Todo input enter key
-    document.getElementById('todo-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    // Add todo button with null check
+    const addTodoBtn = document.getElementById('add-todo-btn');
+    if (addTodoBtn) {
+      addTodoBtn.addEventListener('click', () => {
         this.addTodo();
-      }
-    });
+      });
+    }
     
-    // Waifu click for affection
+    // Todo input enter key with null check
+    const todoInput = document.getElementById('todo-input');
+    if (todoInput) {
+      todoInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.addTodo();
+        }
+      });
+    }
+    
+    // Waifu click for affection with null check
     this.waifuManager.addClickHandler(() => {
       this.affectionManager.increase(
         CONFIG.AFFECTION.WAIFU_CLICK,
@@ -170,7 +185,18 @@ export class WaifuApp {
 
   addTodo() {
     const input = document.getElementById('todo-input');
+    if (!input) {
+      this.logger.error('Todo input element not found');
+      return;
+    }
+    
     const text = input.value.trim();
+    
+    // Additional validation
+    if (text.length > 500) {
+      alert('Task description is too long (max 500 characters)');
+      return;
+    }
     
     if (this.todoManager.add(text)) {
       input.value = '';
@@ -208,14 +234,49 @@ export class WaifuApp {
   setupSettingsEventHandlers() {
     const container = document.querySelector('.settings-container');
     
-    // Add event listeners for real-time settings updates
-    const inputs = container.querySelectorAll('input[type="number"], input[type="checkbox"]');
-    inputs.forEach(input => {
-      input.addEventListener('change', () => {
+    // Save button - apply all settings at once with null check
+    const saveSettingsBtn = document.getElementById('save-settings');
+    if (saveSettingsBtn) {
+      saveSettingsBtn.addEventListener('click', () => {
         const newSettings = this.uiManager.getSettingsFromUI();
+        
+        // Validate settings
+        if (!this.validateSettings(newSettings)) {
+          alert('Please check your settings. Some values are invalid.');
+          return;
+        }
+        
+        // Update all settings
         Object.keys(newSettings).forEach(key => {
           this.settingsManager.set(key, newSettings[key]);
         });
+        
+        // Apply the settings immediately
+        this.applySettings(newSettings);
+        
+        // Show success message
+        const saveBtn = document.getElementById('save-settings');
+        if (saveBtn) {
+          const originalText = saveBtn.textContent;
+          saveBtn.textContent = '✅ Saved!';
+          saveBtn.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+          
+          setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.background = '';
+          }, 2000);
+        }
+        
+        this.logger.log('Settings saved and applied');
+      });
+    }
+    
+    // Real-time preview mode (optional - can be disabled for performance)
+    const inputs = container.querySelectorAll('input[type="number"], input[type="checkbox"]');
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        // Optional: Show preview without saving
+        // this.previewSettings();
       });
     });
 
@@ -224,6 +285,7 @@ export class WaifuApp {
       if (confirm('Are you sure you want to reset all settings to defaults?')) {
         this.settingsManager.resetToDefaults();
         this.uiManager.populateSettings(this.settingsManager.getSettings());
+        this.applySettings(this.settingsManager.getSettings());
       }
     });
 
@@ -286,19 +348,59 @@ export class WaifuApp {
     CONFIG.TOOLTIP.EVENT_DURATION = settings.quoteEventDuration * 1000;
     CONFIG.TOOLTIP.AUTO_ENABLED = settings.quoteAutoEnabled;
 
+    this.logger.log(`Quote auto-enabled setting: ${settings.quoteAutoEnabled}`);
+
     // Apply Sprite settings
     CONFIG.SPRITE_CYCLE_INTERVAL = settings.spriteCycleInterval * 1000;
 
-    // Restart systems with new settings
+    // Restart quote system with new settings
+    this.stopQuoteSystem(); // Stop current system
     if (settings.quoteAutoEnabled) {
-      this.startQuoteSystem();
+      this.startQuoteSystem(); // Restart with new intervals
     } else {
-      this.stopQuoteSystem();
+      this.logger.log('Quote system disabled by settings');
     }
 
     // this.waifuManager.updateCycleInterval(CONFIG.SPRITE_CYCLE_INTERVAL); // DISABLED - No auto cycling
 
     this.logger.log('Settings applied successfully');
+  }
+
+  previewSettings() {
+    // Preview settings changes without saving (for real-time feedback)
+    const tempSettings = this.uiManager.getSettingsFromUI();
+    
+    // Apply only visual/immediate changes for preview
+    CONFIG.TOOLTIP.DISPLAY_DURATION = tempSettings.quoteDisplayDuration * 1000;
+    CONFIG.TOOLTIP.EVENT_DURATION = tempSettings.quoteEventDuration * 1000;
+    
+    // Don't restart systems during preview to avoid performance issues
+    this.logger.log('Settings previewed (not saved)');
+  }
+
+  validateSettings(settings) {
+    // Validate numeric settings are within reasonable bounds
+    const validations = [
+      { key: 'pomodoroWorkDuration', min: 1, max: 120 },
+      { key: 'pomodoroShortBreak', min: 1, max: 30 },
+      { key: 'pomodoroLongBreak', min: 1, max: 60 },
+      { key: 'pomodoroSessionsUntilLongBreak', min: 2, max: 10 },
+      { key: 'affectionTaskCompletion', min: 1, max: 100 },
+      { key: 'affectionWaifuClick', min: 1, max: 50 },
+      { key: 'quoteRandomInterval', min: 5, max: 300 },
+      { key: 'quoteDisplayDuration', min: 1, max: 30 },
+      { key: 'spriteCycleInterval', min: 1, max: 60 }
+    ];
+
+    for (const validation of validations) {
+      const value = settings[validation.key];
+      if (value < validation.min || value > validation.max) {
+        this.logger.error(`${validation.key} must be between ${validation.min} and ${validation.max}`);
+        return false;
+      }
+    }
+
+    return true;
   }
 
   setupStorageSync() {
@@ -356,7 +458,10 @@ export class WaifuApp {
 
   // Quote System Methods
   startQuoteSystem() {
-    if (!CONFIG.TOOLTIP.AUTO_ENABLED) return;
+    if (!CONFIG.TOOLTIP.AUTO_ENABLED) {
+      this.logger.log('Quote system start requested but AUTO_ENABLED is false - skipping');
+      return;
+    }
     
     this.logger.log('Starting quote system...');
     
@@ -380,6 +485,12 @@ export class WaifuApp {
   }
 
   showRandomQuote() {
+    // Double-check that auto quotes are enabled before showing
+    if (!CONFIG.TOOLTIP.AUTO_ENABLED) {
+      this.logger.log('Auto quotes disabled, skipping random quote');
+      return;
+    }
+    
     if (this.tooltipManager.isCurrentlyVisible()) {
       this.logger.log('Tooltip already visible, skipping random quote');
       return;
@@ -416,14 +527,6 @@ export class WaifuApp {
       return 'sad';
     } else {
       return 'neutral';
-    }
-  }
-
-  stopQuoteSystem() {
-    if (this.quoteTimer) {
-      clearInterval(this.quoteTimer);
-      this.quoteTimer = null;
-      this.logger.log('Quote system stopped');
     }
   }
 
