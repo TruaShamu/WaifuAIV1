@@ -13,6 +13,7 @@ import { SettingsManager } from './managers/SettingsManager.js';
 import { UIManager } from './managers/UIManager.js';
 import { InteractionManager } from './managers/InteractionManager.js';
 import { NotepadManager } from './managers/NotepadManager.js';
+import { ShareManager } from './managers/ShareManager.js';
 import { QuoteService } from './services/QuoteService.js';
 import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js';
 
@@ -39,6 +40,7 @@ export class WaifuApp {
     this.tooltipManager = new TooltipManager(logger);
     this.pomodoroManager = new PomodoroManager(storageProvider, logger);
     this.notepadManager = new NotepadManager(storageProvider, logger);
+    this.shareManager = new ShareManager(logger, this);
     
     // Initialize interaction manager
     this.interactionManager = new InteractionManager(logger, {
@@ -116,6 +118,9 @@ export class WaifuApp {
       
       // Initialize notepad manager
       await this.notepadManager.initialize();
+      
+      // Initialize share manager
+      this.shareManager.initialize();
       
       // Set up settings integration (this applies loaded settings)
       this.setupSettingsIntegration();
@@ -697,6 +702,10 @@ export class WaifuApp {
     
     if (this.notepadManager) {
       this.notepadManager.cleanup();
+    }
+    
+    if (this.shareManager) {
+      this.shareManager.cleanup();
     }
     
     this.logger.log('Application destroyed');

@@ -701,7 +701,14 @@ body {
   text-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
 }
 
-.settings-button {
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.settings-button,
+.share-button {
   background: linear-gradient(135deg, #ff69b4, #ff1493);
   border: none;
   border-radius: 50%;
@@ -714,10 +721,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
 }
 
 .settings-button:hover {
   transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.5);
+}
+
+.share-button:hover {
+  transform: scale(1.1);
   box-shadow: 0 4px 20px rgba(255, 105, 180, 0.5);
 }
 
@@ -1090,7 +1103,7 @@ button span:first-child {
 #notepad-textarea {
   width: 100%;
   min-height: 150px;
-  max-height: 300px;
+  max-height: 500px;
   background: #1a1a1a;
   border: 2px solid #333;
   border-radius: 8px;
@@ -1099,9 +1112,10 @@ button span:first-child {
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.4;
-  resize: vertical;
-  transition: border-color 0.3s ease;
+  resize: none;
+  transition: border-color 0.3s ease, height 0.2s ease;
   box-sizing: border-box;
+  overflow-y: hidden;
 }
 
 #notepad-textarea:focus {
@@ -1161,5 +1175,166 @@ button span:first-child {
     flex-direction: column;
     gap: 5px;
     align-items: stretch;
+  }
+}
+
+/* Share Modal Styles */
+.share-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10002;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.share-content {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 2px solid #ff69b4;
+  border-radius: 15px;
+  padding: 25px;
+  max-width: 500px;
+  width: 90%;
+  color: white;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.share-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.share-header h2 {
+  color: #ff69b4;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.share-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #ff69b4;
+  font-size: 28px;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.share-close:hover {
+  background: rgba(255, 105, 180, 0.1);
+  border-radius: 50%;
+}
+
+.stats-card {
+  background: rgba(255, 105, 180, 0.1);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 105, 180, 0.3);
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px 0;
+}
+
+.stats-row:last-child {
+  margin-bottom: 0;
+}
+
+.stats-label {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.stats-value {
+  color: #ff69b4;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.share-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.share-action-btn {
+  background: linear-gradient(135deg, #444 0%, #333 100%);
+  border: 1px solid #555;
+  border-radius: 8px;
+  color: white;
+  padding: 10px 15px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.share-action-btn:hover {
+  background: linear-gradient(135deg, #555 0%, #444 100%);
+  border-color: #ff69b4;
+}
+
+.share-action-btn.primary {
+  background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+  border-color: #ff69b4;
+}
+
+.share-action-btn.primary:hover {
+  background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+}
+
+/* Responsive adjustments for share modal */
+@media (max-width: 400px) {
+  .share-content {
+    padding: 20px 15px;
+    width: 95%;
+  }
+  
+  .share-header h2 {
+    font-size: 20px;
+  }
+  
+  .stats-card {
+    padding: 15px;
+  }
+  
+  .stats-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .stats-value {
+    font-size: 14px;
+  }
+  
+  .share-actions {
+    flex-direction: column;
+  }
+  
+  .share-action-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

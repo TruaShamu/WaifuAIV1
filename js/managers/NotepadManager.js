@@ -58,6 +58,9 @@ export class NotepadManager {
         // Update stats
         this.updateStats();
         
+        // Initial auto-resize
+        this.autoResize();
+        
         this.isInitialized = true;
         this.logger.log('NotepadManager initialized');
     }
@@ -73,8 +76,11 @@ export class NotepadManager {
             });
             
             this.textarea.addEventListener('paste', () => {
-                // Update stats after paste
-                setTimeout(() => this.updateStats(), 10);
+                // Update stats and resize after paste
+                setTimeout(() => {
+                    this.updateStats();
+                    this.autoResize();
+                }, 10);
             });
             
             // Keyboard shortcuts
@@ -115,6 +121,7 @@ export class NotepadManager {
     handleTextChange() {
         this.notes = this.textarea.value;
         this.updateStats();
+        this.autoResize();
         this.scheduleAutoSave();
     }
 
@@ -166,8 +173,30 @@ export class NotepadManager {
     }
 
     /**
-     * Update character and word count
+     * Auto-resize textarea based on content
      */
+    autoResize() {
+        if (!this.textarea) return;
+        
+        // Reset height to auto to get the correct scrollHeight
+        this.textarea.style.height = 'auto';
+        
+        // Calculate the new height based on content
+        const scrollHeight = this.textarea.scrollHeight;
+        const minHeight = 150; // Minimum height in pixels
+        const maxHeight = 500; // Maximum height in pixels
+        
+        // Set height to content height, but within min/max bounds
+        const newHeight = Math.max(minHeight, Math.min(maxHeight, scrollHeight));
+        this.textarea.style.height = newHeight + 'px';
+        
+        // Add scrollbar if content exceeds max height
+        if (scrollHeight > maxHeight) {
+            this.textarea.style.overflowY = 'scroll';
+        } else {
+            this.textarea.style.overflowY = 'hidden';
+        }
+    }
     updateStats() {
         if (!this.textarea) return;
         
@@ -302,6 +331,8 @@ export class NotepadManager {
             
             if (this.textarea) {
                 this.textarea.value = this.notes;
+                // Auto-resize after loading content
+                setTimeout(() => this.autoResize(), 10);
             }
             
             this.logger.log(`Loaded ${this.notes.length} characters of notes`);
@@ -502,6 +533,7 @@ export class NotepadManager {
         if (this.textarea) {
             this.textarea.value = content;
             this.updateStats();
+            this.autoResize();
         }
     }
 

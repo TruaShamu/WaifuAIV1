@@ -35,9 +35,23 @@ export class UIManager {
     this.settingsButton.innerHTML = IconMapper.getIcon('settings');
     this.settingsButton.title = 'Settings';
     
+    // Create share button
+    this.shareButton = document.createElement('button');
+    this.shareButton.id = 'share-stats-btn';
+    this.shareButton.className = 'share-button';
+    this.shareButton.innerHTML = '📤';
+    this.shareButton.title = 'Share your productivity stats';
+    
     // Add to header
     const header = document.querySelector('.header') || this.createHeader();
-    header.appendChild(this.settingsButton);
+    
+    // Create button container for proper spacing
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'header-buttons';
+    buttonContainer.appendChild(this.shareButton);
+    buttonContainer.appendChild(this.settingsButton);
+    
+    header.appendChild(buttonContainer);
   }
 
   createHeader() {

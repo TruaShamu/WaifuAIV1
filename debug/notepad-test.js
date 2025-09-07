@@ -22,7 +22,29 @@ function testNotepadSystem() {
         console.log('Testing notepad functionality...');
         
         // Test setting notes
-        const testContent = 'Hello from notepad test!\n\n• This is a test note\n• With multiple lines\n• And bullet points';
+        const testContent = `Hello from notepad test!
+
+This is a test note with multiple lines to test the auto-resize functionality.
+
+• Bullet point 1
+• Bullet point 2
+• Bullet point 3
+
+Some code example:
+function test() {
+    console.log("Testing auto-resize");
+    return "success";
+}
+
+More text to make it longer...
+Line 1
+Line 2
+Line 3
+Line 4
+Line 5
+
+This should make the textarea grow automatically!`;
+        
         notepadManager.setNotes(testContent);
         
         // Test getting stats
