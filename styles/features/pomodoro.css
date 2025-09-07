@@ -1,0 +1,210 @@
+/* Pomodoro Timer Feature Styles */
+#pomodoro-container {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #333;
+}
+
+#pomodoro-container .panel-content {
+  padding: 20px;
+}
+
+#pomodoro-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+#timer-circle {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#timer-progress {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(#333 0deg, #333 360deg);
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+#timer-fill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  border-radius: 50%;
+  background: conic-gradient(#ff69b4 0deg, #ff1493 90deg, #dc143c 180deg, #333 180deg);
+  transition: background 0.3s ease;
+  mask: radial-gradient(circle at center, transparent 55px, black 57px);
+  -webkit-mask: radial-gradient(circle at center, transparent 55px, black 57px);
+}
+
+#timer-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  background: #222;
+  border-radius: 50%;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #444;
+}
+
+#timer-time {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 5px;
+  font-family: 'Courier New', monospace;
+}
+
+#timer-session {
+  font-size: 12px;
+  color: #ff69b4;
+  font-weight: 500;
+}
+
+#pomodoro-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.pomodoro-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  min-width: 60px;
+}
+
+.pomodoro-btn:hover:not(:disabled) {
+  background: #444;
+  border-color: #666;
+  transform: translateY(-1px);
+}
+
+.pomodoro-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pomodoro-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.pomodoro-btn.primary {
+  background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+  border-color: #ff69b4;
+  color: white;
+}
+
+.pomodoro-btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff85c1 0%, #ff3fa4 100%);
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+}
+
+#pomodoro-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pomodoro-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 105, 180, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 105, 180, 0.2);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 13px;
+  color: #ff69b4;
+  font-weight: bold;
+}
+
+/* Timer States */
+.timer-work #timer-fill {
+  background: conic-gradient(#ff69b4 0deg, #ff1493 var(--progress, 0deg), #333 var(--progress, 0deg));
+}
+
+.timer-break #timer-fill {
+  background: conic-gradient(#4CAF50 0deg, #45a049 var(--progress, 0deg), #333 var(--progress, 0deg));
+}
+
+.timer-long-break #timer-fill {
+  background: conic-gradient(#2196F3 0deg, #1976D2 var(--progress, 0deg), #333 var(--progress, 0deg));
+}
+
+.timer-running #timer-content {
+  animation: timerPulse 2s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% {
+    border-color: #444;
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4);
+  }
+  50% {
+    border-color: #ff69b4;
+    box-shadow: 0 0 0 8px rgba(255, 105, 180, 0);
+  }
+}
+
+/* Responsive Pomodoro Styles */
+@media (max-width: 320px) {
+  #timer-circle {
+    width: 120px;
+    height: 120px;
+  }
+  
+  #timer-content {
+    width: 85px;
+    height: 85px;
+  }
+  
+  #timer-time {
+    font-size: 18px;
+  }
+  
+  #timer-session {
+    font-size: 10px;
+  }
+  
+  .pomodoro-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-width: 50px;
+  }
+}

@@ -284,7 +284,7 @@ export class ShareManager {
                     </div>
                     <div class="stats-row">
                         <span class="stats-label">Interaction Success:</span>
-                        <span class="stats-value">${stats.interaction.successRate}</span>
+                        <span class="stats-value">${stats.interaction.successRate}%</span>
                     </div>
                 </div>
                 
