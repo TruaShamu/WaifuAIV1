@@ -1,0 +1,281 @@
+/* Mood Tracker Styles */
+
+/* Mood Calendar Container */
+.mood-calendar {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Calendar Header */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 105, 180, 0.3);
+}
+
+.calendar-title {
+  color: #ff69b4;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+
+.calendar-nav {
+  background: rgba(255, 105, 180, 0.2);
+  border: 1px solid rgba(255, 105, 180, 0.4);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  color: #ff69b4;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-nav:hover {
+  background: rgba(255, 105, 180, 0.4);
+  transform: scale(1.1);
+}
+
+/* Weekday Headers */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ff69b4;
+  padding: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Calendar Grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+/* Day Cells */
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 35px;
+}
+
+.calendar-day[data-clickable="true"]:hover {
+  background: rgba(255, 105, 180, 0.2);
+  border-color: rgba(255, 105, 180, 0.5);
+  transform: scale(1.05);
+}
+
+.calendar-day:not([data-clickable="true"]) {
+  cursor: default;
+}
+
+/* Day Numbers */
+.day-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Remove the old mood indicator */
+.day-mood {
+  display: none;
+}
+
+/* Other Month Days (Greyed Out) */
+.calendar-day.other-month {
+  opacity: 0.3;
+  cursor: default;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.calendar-day.other-month:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.calendar-day.other-month .day-number {
+  color: #666;
+}
+
+/* Today Highlight */
+.calendar-day.today {
+  border-color: #ff69b4;
+  box-shadow: 0 0 12px rgba(255, 105, 180, 0.6);
+  border-width: 2px;
+}
+
+.calendar-day.today .day-number {
+  color: #ff69b4;
+  font-weight: bold;
+}
+
+/* Mood Scale */
+.mood-scale {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scale-title {
+  color: #ff69b4;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.emotion-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scale-bar {
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scale-segment {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.scale-segment:first-child {
+  border-radius: 11px 0 0 11px;
+}
+
+.scale-segment:last-child {
+  border-radius: 0 11px 11px 0;
+}
+
+.scale-segment:hover {
+  transform: scaleY(1.1);
+  z-index: 1;
+  filter: brightness(1.2);
+}
+
+.scale-emoji {
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.scale-segment:hover .scale-emoji {
+  transform: scale(1.2);
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #ccc;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.scale-label-left,
+.scale-label-right {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 350px) {
+  .calendar-day {
+    min-height: 30px;
+  }
+  
+  .day-number {
+    font-size: 12px;
+  }
+  
+  .weekday {
+    font-size: 10px;
+    padding: 4px 0;
+  }
+  
+  .scale-bar {
+    height: 35px;
+  }
+  
+  .scale-emoji {
+    font-size: 16px;
+  }
+  
+  .scale-labels {
+    font-size: 10px;
+  }
+}
+
+/* Animation for mood changes */
+@keyframes moodPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.calendar-day.mood-changed {
+  animation: moodPulse 0.6s ease-in-out;
+}
+
+/* Mood Statistics (for future use) */
+.mood-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.mood-stat {
+  text-align: center;
+  color: #ccc;
+}
+
+.mood-stat-value {
+  color: #ff69b4;
+  font-weight: bold;
+  display: block;
+}

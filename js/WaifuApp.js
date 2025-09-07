@@ -14,6 +14,7 @@ import { UIManager } from './managers/UIManager.js';
 import { InteractionManager } from './managers/InteractionManager.js';
 import { NotepadManager } from './managers/NotepadManager.js';
 import { ShareManager } from './managers/ShareManager.js';
+import { MoodTracker } from './managers/MoodTracker.js';
 import { QuoteService } from './services/QuoteService.js';
 import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js';
 
@@ -41,6 +42,7 @@ export class WaifuApp {
     this.pomodoroManager = new PomodoroManager(storageProvider, logger);
     this.notepadManager = new NotepadManager(storageProvider, logger);
     this.shareManager = new ShareManager(logger, this);
+    this.moodTracker = new MoodTracker(storageProvider, logger);
     
     // Initialize interaction manager
     this.interactionManager = new InteractionManager(logger, {
@@ -113,11 +115,15 @@ export class WaifuApp {
         this.affectionManager.load(),
         this.todoManager.load(),
         this.pomodoroManager.load(),
-        this.notepadManager.load()
+        this.notepadManager.load(),
+        this.moodTracker.initialize()
       ]);
       
       // Initialize notepad manager
       await this.notepadManager.initialize();
+      
+      // Initialize mood tracker UI
+      this.initializeMoodTracker();
       
       // Initialize share manager
       this.shareManager.initialize();
@@ -264,6 +270,19 @@ export class WaifuApp {
 
     // Apply initial settings
     this.applySettings(this.settingsManager.getSettings());
+  }
+
+  initializeMoodTracker() {
+    const moodContent = document.getElementById('mood-content');
+    if (moodContent) {
+      // Generate and insert the calendar HTML
+      moodContent.innerHTML = this.moodTracker.generateCalendarHTML();
+      
+      // Attach event listeners
+      this.moodTracker.attachEventListeners();
+      
+      this.logger.log('Mood tracker initialized');
+    }
   }
 
   setupSettingsEventHandlers() {
