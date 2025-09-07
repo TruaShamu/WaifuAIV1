@@ -45,6 +45,7 @@ export class AffectionManager {
   increase(amount, container = null) {
     if (this.affection.increase(amount)) {
       this.updateUI();
+      this.triggerShimmerEffect(); // Add shimmer effect on increase
       this.save();
       
       if (container) {
@@ -55,6 +56,18 @@ export class AffectionManager {
       return true;
     }
     return false;
+  }
+
+  triggerShimmerEffect() {
+    if (!this.fillElement) return;
+    
+    // Add shimmer class
+    this.fillElement.classList.add('affection-boost');
+    
+    // Remove the class after animation completes
+    setTimeout(() => {
+      this.fillElement.classList.remove('affection-boost');
+    }, 1500); // Match the CSS animation duration
   }
 
   updateUI() {

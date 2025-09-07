@@ -601,6 +601,12 @@ class WaifuApp {
     try {
       this.logger.log('Initializing Waifu AI Application...');
       
+      // Initialize PanelManager first (for UI setup)
+      if (window.PanelManager) {
+        await window.PanelManager.init();
+        window.PanelManager.setupKeyboardShortcuts();
+      }
+      
       // Load data
       await Promise.all([
         this.affectionManager.load(),

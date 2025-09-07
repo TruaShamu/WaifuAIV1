@@ -202,6 +202,31 @@ const WaifuAIDebugger = {
     console.log('✅ Contextual quote test structure ready');
   },
 
+  // Test affection shimmer effect
+  testAffectionShimmer() {
+    console.log('🧪 Testing Affection Shimmer Effect...');
+    
+    const affectionFill = document.getElementById('affection-fill');
+    if (!affectionFill) {
+      console.error('❌ Affection fill element not found');
+      return false;
+    }
+    
+    console.log('✅ Affection fill element found');
+    
+    // Test adding shimmer class
+    affectionFill.classList.add('affection-boost');
+    console.log('🌟 Shimmer effect triggered - you should see it now!');
+    
+    // Remove after 2 seconds
+    setTimeout(() => {
+      affectionFill.classList.remove('affection-boost');
+      console.log('✅ Shimmer effect removed');
+    }, 2000);
+    
+    return true;
+  },
+
   // Comprehensive test runner
   async runAllTests() {
     console.log('🚀 Starting WaifuAI Debug Test Suite...');
@@ -218,6 +243,7 @@ const WaifuAIDebugger = {
     this.testSettingsValidation();
     this.testTabSpy();
     this.testContextualQuotes();
+    this.testAffectionShimmer();
     
     console.log('=' * 50);
     console.log('📊 Test Results Summary:');

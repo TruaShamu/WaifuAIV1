@@ -11,6 +11,8 @@ import { TooltipManager } from './managers/TooltipManager.js';
 import { PomodoroManager } from './managers/PomodoroManager.js';
 import { SettingsManager } from './managers/SettingsManager.js';
 import { UIManager } from './managers/UIManager.js';
+import { InteractionManager } from './managers/InteractionManager.js';
+import { NotepadManager } from './managers/NotepadManager.js';
 import { QuoteService } from './services/QuoteService.js';
 import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js';
 
@@ -36,6 +38,15 @@ export class WaifuApp {
     this.todoManager = new TodoManager(storageProvider, logger);
     this.tooltipManager = new TooltipManager(logger);
     this.pomodoroManager = new PomodoroManager(storageProvider, logger);
+    this.notepadManager = new NotepadManager(storageProvider, logger);
+    
+    // Initialize interaction manager
+    this.interactionManager = new InteractionManager(logger, {
+      interactionInterval: CONFIG.INTERACTION.INTERVAL,
+      interactionReward: CONFIG.INTERACTION.REWARD,
+      indicatorDuration: CONFIG.INTERACTION.INDICATOR_DURATION,
+      maxMissedInteractions: CONFIG.INTERACTION.MAX_MISSED
+    });
     
     // Quote timer for random quotes
     this.quoteTimer = null;
@@ -83,7 +94,13 @@ export class WaifuApp {
     try {
       this.logger.log('Initializing Waifu AI Application...');
       
-      // Initialize UI Manager first
+      // Initialize PanelManager first (for UI setup)
+      if (window.PanelManager) {
+        await window.PanelManager.init();
+        window.PanelManager.setupKeyboardShortcuts();
+      }
+      
+      // Initialize UI Manager
       this.uiManager.initialize();
       
       // Load settings first
@@ -93,8 +110,12 @@ export class WaifuApp {
       await Promise.all([
         this.affectionManager.load(),
         this.todoManager.load(),
-        this.pomodoroManager.load()
+        this.pomodoroManager.load(),
+        this.notepadManager.load()
       ]);
+      
+      // Initialize notepad manager
+      await this.notepadManager.initialize();
       
       // Set up settings integration (this applies loaded settings)
       this.setupSettingsIntegration();
@@ -147,15 +168,19 @@ export class WaifuApp {
       });
     }
     
-    // Waifu click for affection with null check
+    // Initialize interaction manager with waifu container
+    const waifuContainer = document.getElementById('waifu-container');
+    if (waifuContainer) {
+      this.interactionManager.initialize(waifuContainer, (reward) => {
+        this.affectionManager.increase(reward, waifuContainer);
+        this.updateWaifuMood();
+        this.showEventQuote('waifuInteraction');
+      });
+    }
+    
+    // Still allow direct clicking but with no reward (just animation)
     this.waifuManager.addClickHandler(() => {
-      this.affectionManager.increase(
-        CONFIG.AFFECTION.WAIFU_CLICK,
-        document.getElementById('waifu-container')
-      );
-      this.updateWaifuMood();
-      
-      // Show random waifu click quote
+      // Just show animation and quote, no affection gain
       this.showEventQuote('waifuClick');
     });
     
@@ -664,6 +689,14 @@ export class WaifuApp {
     
     if (this.pomodoroManager) {
       this.pomodoroManager.destroy();
+    }
+    
+    if (this.interactionManager) {
+      this.interactionManager.cleanup();
+    }
+    
+    if (this.notepadManager) {
+      this.notepadManager.cleanup();
     }
     
     this.logger.log('Application destroyed');

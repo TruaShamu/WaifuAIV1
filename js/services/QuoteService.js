@@ -83,6 +83,20 @@ export class QuoteService {
         "Extended rest mode! Relax completely! ♪",
         "Long break magic! Take your time! ✧･ﾟ: *✧･ﾟ:*",
         "Big break time! You've been amazing! ♡"
+      ],
+      waifuInteraction: [
+        "Perfect timing! Thanks for noticing me! 💖(◕‿◕)",
+        "Yay! You caught my signal! I love you! ♡✧",
+        "Excellent! Our connection grows stronger! ♪(´▽｀)",
+        "Wonderful timing! You're so attentive! ✨(◕‿◕)✨",
+        "Amazing! You're always there for me! 💕",
+        "Kyaa~! You noticed my heart! So happy! ♡(˃͈ દ ˂͈ ༶ )"
+      ],
+      waifuClick: [
+        "Ehehe~ That tickles! But only special moments give affection now! ♪",
+        "I appreciate the attention, but wait for my signal! 💖",
+        "Cute! But save your energy for when I really need you! ♡",
+        "Aww~ I love the affection, but timing is everything! ✧"
       ]
     }
     };

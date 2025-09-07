@@ -14,9 +14,16 @@ export const CONFIG = {
   AFFECTION: {
     MAX: 100,
     TASK_COMPLETION: 5,
-    WAIFU_CLICK: 2,
+    WAIFU_CLICK: 2, // Deprecated - use INTERACTION instead
+    INTERACTION: 10, // New timed interaction system
     POMODORO_WORK_SESSION: 8,
     POMODORO_BREAK_SESSION: 3
+  },
+  INTERACTION: {
+    INTERVAL: 5 * 60 * 1000, // 5 minutes between interaction opportunities
+    REWARD: 10, // Affection reward for timed interactions
+    INDICATOR_DURATION: 30 * 1000, // 30 seconds to interact
+    MAX_MISSED: 3 // Reduce interval after missing this many
   },
   SPRITE_CYCLE_INTERVAL: 5000,
   ANIMATION_DURATION: 300,

@@ -19,50 +19,84 @@
         </div>
       </div>
     
-    <div id="pomodoro-container">
-      <h3>🍅 Pomodoro Timer</h3>
-      <div id="pomodoro-display">
-        <div id="timer-circle">
-          <div id="timer-progress">
-            <div id="timer-fill"></div>
-          </div>
-          <div id="timer-content">
-            <div id="timer-time">25:00</div>
-            <div id="timer-session">Work Time</div>
-          </div>
-        </div>
+    <div id="pomodoro-container" class="collapsible-panel">
+      <div class="panel-header" data-panel="pomodoro">
+        <h3>🍅 Pomodoro Timer</h3>
+        <button class="collapse-btn" title="Collapse/Expand">−</button>
       </div>
-      <div id="pomodoro-controls">
-        <button id="pomodoro-start" class="pomodoro-btn primary">Start</button>
-        <button id="pomodoro-pause" class="pomodoro-btn" disabled>Pause</button>
-        <button id="pomodoro-stop" class="pomodoro-btn" disabled>Stop</button>
-        <button id="pomodoro-reset" class="pomodoro-btn">Reset</button>
-      </div>
-      <div id="pomodoro-stats">
-        <div class="pomodoro-stat">
-          <span class="stat-label">Work Sessions:</span>
-          <span class="stat-value" id="work-sessions">0</span>
+      <div class="panel-content" id="pomodoro-content">
+        <div id="pomodoro-display">
+          <div id="timer-circle">
+            <div id="timer-progress">
+              <div id="timer-fill"></div>
+            </div>
+            <div id="timer-content">
+              <div id="timer-time">25:00</div>
+              <div id="timer-session">Work Time</div>
+            </div>
+          </div>
         </div>
-        <div class="pomodoro-stat">
-          <span class="stat-label">Total Sessions:</span>
-          <span class="stat-value" id="total-sessions">0</span>
+        <div id="pomodoro-controls">
+          <button id="pomodoro-start" class="pomodoro-btn primary">Start</button>
+          <button id="pomodoro-pause" class="pomodoro-btn" disabled>Pause</button>
+          <button id="pomodoro-stop" class="pomodoro-btn" disabled>Stop</button>
+          <button id="pomodoro-reset" class="pomodoro-btn">Reset</button>
         </div>
-        <div class="pomodoro-stat">
-          <span class="stat-label">Productive Time:</span>
-          <span class="stat-value" id="productive-time">0m</span>
+        <div id="pomodoro-stats">
+          <div class="pomodoro-stat">
+            <span class="stat-label">Work Sessions:</span>
+            <span class="stat-value" id="work-sessions">0</span>
+          </div>
+          <div class="pomodoro-stat">
+            <span class="stat-label">Total Sessions:</span>
+            <span class="stat-value" id="total-sessions">0</span>
+          </div>
+          <div class="pomodoro-stat">
+            <span class="stat-label">Productive Time:</span>
+            <span class="stat-value" id="productive-time">0m</span>
+          </div>
         </div>
       </div>
     </div>
     
-    <div id="todo-container">
-      <h3>My Tasks</h3>
-      <div id="todo-input-container">
-        <input type="text" id="todo-input" placeholder="Add a new task...">
-        <button id="add-todo-btn">+</button>
+    <div id="todo-container" class="collapsible-panel">
+      <div class="panel-header" data-panel="todo">
+        <h3>✅ My Tasks</h3>
+        <button class="collapse-btn" title="Collapse/Expand">−</button>
       </div>
-      <ul id="todo-list"></ul>
-      <div id="todo-stats">
-        <span id="task-count">0 tasks</span>
+      <div class="panel-content" id="todo-content">
+        <div id="todo-input-container">
+          <input type="text" id="todo-input" placeholder="Add a new task...">
+          <button id="add-todo-btn">+</button>
+        </div>
+        <ul id="todo-list"></ul>
+        <div id="todo-stats">
+          <span id="task-count">0 tasks</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="notepad-container" class="collapsible-panel">
+      <div class="panel-header" data-panel="notepad">
+        <h3>📝 Quick Notes</h3>
+        <button class="collapse-btn" title="Collapse/Expand">−</button>
+      </div>
+      <div class="panel-content" id="notepad-content">
+        <div id="notepad-toolbar">
+          <button id="notepad-copy-btn" class="notepad-btn" title="Copy to clipboard (Ctrl+Shift+C)">📋 Copy</button>
+          <button id="notepad-clear-btn" class="notepad-btn" title="Clear notes">🗑️ Clear</button>
+          <button id="notepad-save-btn" class="notepad-btn" title="Save notes (Ctrl+S)">💾 Save</button>
+          <button id="notepad-help-btn" class="notepad-btn" title="Keyboard shortcuts">❓ Help</button>
+        </div>
+        <textarea 
+          id="notepad-textarea" 
+          placeholder="Write your quick notes here...&#10;• Meeting notes&#10;• Todo reminders&#10;• Code snippets&#10;• Random thoughts"
+          spellcheck="true"
+        ></textarea>
+        <div id="notepad-stats">
+          <span id="notepad-char-count">0 characters</span>
+          <span id="notepad-word-count">0 words</span>
+        </div>
       </div>
     </div>
   </div>
