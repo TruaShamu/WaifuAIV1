@@ -89,6 +89,9 @@ export class WaifuApp {
       // Check storage usage
       await this.checkStorageUsage();
       
+      // Request notification permission for Pomodoro
+      await this.pomodoroManager.requestNotificationPermission();
+      
       this.logger.log('Application initialized successfully');
     } catch (error) {
       this.logger.error(`Initialization failed: ${error.message}`);
