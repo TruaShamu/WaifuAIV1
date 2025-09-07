@@ -326,9 +326,17 @@ export class WaifuApp {
     }
     
     // Real-time preview mode (optional - can be disabled for performance)
-    const inputs = container.querySelectorAll('input[type="number"], input[type="checkbox"]');
+    const inputs = container.querySelectorAll('input[type="number"], input[type="checkbox"], input[type="range"]');
     inputs.forEach(input => {
       input.addEventListener('input', () => {
+        // Update range slider display
+        if (input.type === 'range') {
+          const valueDisplay = document.getElementById(`${input.id}-value`);
+          if (valueDisplay) {
+            valueDisplay.textContent = input.value;
+          }
+        }
+        
         // Optional: Show preview without saving
         // this.previewSettings();
       });

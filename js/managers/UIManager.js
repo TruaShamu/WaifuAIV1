@@ -4,6 +4,7 @@
  */
 
 import { IconMapper } from '../services/IconMapper.js';
+import { SettingsTemplate } from '../services/SettingsTemplate.js';
 
 export class UIManager {
   constructor(logger) {
@@ -164,15 +165,9 @@ export class UIManager {
   }
 
   buildAISection() {
-    return `
-      <div class="settings-section">
-        <h3>🤖 AI Integration</h3>
-        ${this.createTextareaInput('custom-instructions', 'Custom Instructions:', 'Enter custom instructions for future AI features...', 6)}
-        <div class="setting-info">
-          <p class="info-text">ℹ️ These instructions will be used for future LLM integration features. You can set your preferences, personality traits, or specific behaviors you want the AI to follow.</p>
-        </div>
-      </div>
-    `;
+    const template = new SettingsTemplate();
+    const aiSection = template.sections.find(section => section.id === 'ai');
+    return template.generateSection(aiSection);
   }
 
   buildAppearanceSection() {
@@ -353,6 +348,15 @@ export class UIManager {
     if (customInstructionsTextarea) {
       customInstructionsTextarea.value = settings.customInstructions || '';
     }
+    
+    const aiDialogueSlider = document.getElementById('ai-dialogue-percentage');
+    if (aiDialogueSlider) {
+      aiDialogueSlider.value = settings.aiDialoguePercentage || 0;
+      const valueDisplay = document.getElementById('ai-dialogue-percentage-value');
+      if (valueDisplay) {
+        valueDisplay.textContent = settings.aiDialoguePercentage || 0;
+      }
+    }
 
     // Feature flags
     document.getElementById('experimental-features').checked = settings.enableExperimentalFeatures;
@@ -395,6 +399,8 @@ export class UIManager {
 
       // AI Integration settings
       customInstructions: document.getElementById('custom-instructions')?.value || '',
+      aiDialoguePercentage: parseInt(document.getElementById('ai-dialogue-percentage')?.value || 0),
+      aiDialoguePercentage: parseInt(document.getElementById('ai-dialogue-percentage')?.value || 0),
 
       // Feature flags
       enableExperimentalFeatures: document.getElementById('experimental-features').checked,

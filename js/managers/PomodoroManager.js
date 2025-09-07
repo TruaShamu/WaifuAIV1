@@ -28,8 +28,160 @@ export class PomodoroManager {
     this.onTick = null;
     this.onStateChange = null;
     
-    // Notifications
+    // Notifications and Audio
     this.notificationsEnabled = true;
+    this.audioEnabled = true;
+    this.audioContext = null;
+    this.completionAudio = null;
+    
+    this.initializeAudio();
+  }
+
+  /**
+   * Initialize audio system for timer completion sounds
+   */
+  initializeAudio() {
+    try {
+      // Try to load a custom audio file first
+      this.completionAudio = new Audio();
+      
+      // Check if there's a custom audio file in assets
+      const audioFiles = [
+        'assets/pomodoro-chime.mp3',
+        'assets/pomodoro-chime.wav',
+        'assets/chime.mp3',
+        'assets/chime.wav',
+        'assets/ding.mp3',
+        'assets/ding.wav'
+      ];
+      
+      // Try to find an existing audio file
+      this.loadAudioFile(audioFiles);
+      
+      // Initialize Web Audio API as fallback for generated chimes
+      if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+        this.audioContext = new (AudioContext || webkitAudioContext)();
+      }
+      
+    } catch (error) {
+      this.logger.error('Failed to initialize audio system:', error);
+      this.audioEnabled = false;
+    }
+  }
+
+  /**
+   * Try to load an audio file from the available options
+   */
+  async loadAudioFile(audioFiles) {
+    for (const audioFile of audioFiles) {
+      try {
+        const testAudio = new Audio(audioFile);
+        
+        // Test if the file exists and can be loaded
+        await new Promise((resolve, reject) => {
+          testAudio.addEventListener('canplaythrough', resolve);
+          testAudio.addEventListener('error', reject);
+          testAudio.load();
+        });
+        
+        // If we get here, the file loaded successfully
+        this.completionAudio.src = audioFile;
+        this.completionAudio.volume = 0.7; // Set reasonable volume
+        this.logger.log(`Loaded audio file: ${audioFile}`);
+        return true;
+        
+      } catch (error) {
+        // Continue to next file
+        continue;
+      }
+    }
+    
+    // No audio file found, will use Web Audio API fallback
+    this.logger.log('No audio file found, will use generated chimes');
+    return false;
+  }
+
+  /**
+   * Play completion sound - either file or generated chime
+   */
+  playCompletionSound(sessionType = 'work') {
+    if (!this.audioEnabled) return;
+    
+    try {
+      // Try to play custom audio file first
+      if (this.completionAudio && this.completionAudio.src) {
+        this.completionAudio.currentTime = 0; // Reset to beginning
+        this.completionAudio.play().catch(error => {
+          this.logger.error('Failed to play audio file:', error);
+          // Fallback to generated chime
+          this.playGeneratedChime(sessionType);
+        });
+      } else {
+        // Use generated chime
+        this.playGeneratedChime(sessionType);
+      }
+    } catch (error) {
+      this.logger.error('Failed to play completion sound:', error);
+    }
+  }
+
+  /**
+   * Generate and play a chime sound using Web Audio API
+   */
+  playGeneratedChime(sessionType = 'work') {
+    if (!this.audioContext) return;
+    
+    try {
+      // Different chime patterns for different session types
+      const chimePatterns = {
+        work: [800, 1000, 1200], // Rising tones for work completion
+        shortBreak: [1000, 800], // Two-tone for break completion
+        longBreak: [600, 800, 1000, 1200] // Longer sequence for long break
+      };
+      
+      const frequencies = chimePatterns[sessionType] || chimePatterns.work;
+      
+      frequencies.forEach((frequency, index) => {
+        setTimeout(() => {
+          this.playTone(frequency, 0.3, 0.1); // 300ms tone with 100ms attack/decay
+        }, index * 200); // 200ms between each tone
+      });
+      
+    } catch (error) {
+      this.logger.error('Failed to generate chime:', error);
+    }
+  }
+
+  /**
+   * Play a single tone using Web Audio API
+   */
+  playTone(frequency, duration, volume = 0.1) {
+    if (!this.audioContext) return;
+    
+    try {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Set up the tone
+      oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+      oscillator.type = 'sine'; // Smooth sine wave
+      
+      // Set up volume envelope for smooth sound
+      gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.01); // Quick attack
+      gainNode.gain.linearRampToValueAtTime(volume * 0.8, this.audioContext.currentTime + duration * 0.8); // Sustain
+      gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration); // Decay
+      
+      // Play the tone
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + duration);
+      
+    } catch (error) {
+      this.logger.error('Failed to play tone:', error);
+    }
   }
 
   setUIElements(elements) {
@@ -183,6 +335,9 @@ export class PomodoroManager {
   handleSessionComplete(state) {
     this.stopTimer();
     this.save();
+    
+    // Play completion sound
+    this.playCompletionSound(state.completedSessionType);
     
     // Show notification
     this.showNotification(state);
@@ -343,6 +498,11 @@ export class PomodoroManager {
     // Update notification settings
     if (settings.notificationsEnabled !== undefined) {
       this.notificationsEnabled = settings.notificationsEnabled;
+    }
+    
+    // Update audio settings
+    if (settings.audioEnabled !== undefined) {
+      this.audioEnabled = settings.audioEnabled;
     }
     
     // Update auto-start settings

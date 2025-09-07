@@ -43,6 +43,7 @@ export class SettingsManager {
       
       // AI Integration Settings
       customInstructions: '',
+      aiDialoguePercentage: 0, // 0-100% AI vs static dialogue
       
       // Feature Flags
       enableExperimentalFeatures: false,

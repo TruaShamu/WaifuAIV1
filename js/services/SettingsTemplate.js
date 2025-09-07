@@ -66,6 +66,24 @@ export class SettingsTemplate {
         ]
       },
       {
+        id: 'ai',
+        title: '🤖 AI Integration',
+        settings: [
+          { 
+            type: 'range', 
+            id: 'ai-dialogue-percentage', 
+            label: 'AI Dialogue Percentage:', 
+            min: 0, 
+            max: 100, 
+            step: 10,
+            unit: '%',
+            description: 'Controls how often AI generates personalized dialogue vs using static responses'
+          },
+          { type: 'info', text: 'Higher percentages provide more personalized responses based on your activity and mood patterns.' },
+          { type: 'textarea', id: 'custom-instructions', label: 'Custom AI Instructions:', placeholder: 'Add custom personality or behavior instructions for your waifu...' }
+        ]
+      },
+      {
         id: 'features',
         title: 'Feature Flags',
         settings: [
@@ -129,12 +147,16 @@ export class SettingsTemplate {
     switch (setting.type) {
       case 'number':
         return this.generateNumberInput(setting);
+      case 'range':
+        return this.generateRangeInput(setting);
       case 'checkbox':
         return this.generateCheckboxInput(setting);
       case 'select':
         return this.generateSelectInput(setting);
       case 'text':
         return this.generateTextInput(setting);
+      case 'textarea':
+        return this.generateTextareaInput(setting);
       case 'info':
         return this.generateInfoText(setting);
       default:
@@ -147,9 +169,27 @@ export class SettingsTemplate {
     return `
       <div class="setting-item" data-setting="${setting.id}">
         <label for="${setting.id}">${setting.label}</label>
-        <input type="number" id="${setting.id}" 
+        <input type="number" id="${setting.id}" class="form-input"
                min="${setting.min}" max="${setting.max}" step="${setting.step}"
                ${setting.placeholder ? `placeholder="${setting.placeholder}"` : ''}>
+      </div>
+    `;
+  }
+
+  generateRangeInput(setting) {
+    return `
+      <div class="setting-item range-item" data-setting="${setting.id}">
+        <label for="${setting.id}">${setting.label}</label>
+        <div class="range-container">
+          <input type="range" id="${setting.id}" 
+                 min="${setting.min}" max="${setting.max}" step="${setting.step}"
+                 class="range-slider">
+          <div class="range-display">
+            <span class="range-value" id="${setting.id}-value">0</span>
+            ${setting.unit ? `<span class="range-unit">${setting.unit}</span>` : ''}
+          </div>
+        </div>
+        ${setting.description ? `<div class="setting-description">${setting.description}</div>` : ''}
       </div>
     `;
   }
@@ -169,7 +209,7 @@ export class SettingsTemplate {
     return `
       <div class="setting-item" data-setting="${setting.id}">
         <label for="${setting.id}">${setting.label}</label>
-        <select id="${setting.id}">
+        <select id="${setting.id}" class="form-select">
           ${setting.options.map(option => 
             `<option value="${option.value}">${option.text}</option>`
           ).join('')}
@@ -182,8 +222,18 @@ export class SettingsTemplate {
     return `
       <div class="setting-item" data-setting="${setting.id}">
         <label for="${setting.id}">${setting.label}</label>
-        <input type="text" id="${setting.id}" 
+        <input type="text" id="${setting.id}" class="form-input"
                ${setting.placeholder ? `placeholder="${setting.placeholder}"` : ''}>
+      </div>
+    `;
+  }
+
+  generateTextareaInput(setting) {
+    return `
+      <div class="setting-item textarea-item" data-setting="${setting.id}">
+        <label for="${setting.id}">${setting.label}</label>
+        <textarea id="${setting.id}" class="form-textarea" rows="4"
+                  ${setting.placeholder ? `placeholder="${setting.placeholder}"` : ''}></textarea>
       </div>
     `;
   }
