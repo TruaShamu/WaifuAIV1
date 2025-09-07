@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Waifu Sidebar</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <div id="app-container">
+    <div id="waifu-container">
+      <img id="waifu-sprite" src="assets/saber_neutral.png" alt="Waifu">
+      <div id="affection-container">
+        <div id="affection-label">Affection</div>
+        <div id="affection-bar">
+          <div id="affection-fill"></div>
+          <div id="affection-text">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="todo-container">
+      <h3>My Tasks</h3>
+      <div id="todo-input-container">
+        <input type="text" id="todo-input" placeholder="Add a new task...">
+        <button id="add-todo-btn">+</button>
+      </div>
+      <ul id="todo-list"></ul>
+      <div id="todo-stats">
+        <span id="task-count">0 tasks</span>
+      </div>
+    </div>
+  </div>
+  <script src="sidebar.js"></script>
+</body>
+</html>
