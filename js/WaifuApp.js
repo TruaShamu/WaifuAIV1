@@ -7,11 +7,16 @@ import { CONFIG } from './config.js';
 import { WaifuSpriteManager } from './managers/WaifuSpriteManager.js';
 import { AffectionManager } from './managers/AffectionManager.js';
 import { TodoManager } from './managers/TodoManager.js';
+import { TooltipManager } from './managers/TooltipManager.js';
+import { QuoteService } from './services/QuoteService.js';
 
 export class WaifuApp {
   constructor(storageProvider, logger) {
     this.storageProvider = storageProvider;
     this.logger = logger;
+    
+    // Initialize services
+    this.quoteService = new QuoteService(logger);
     
     // Initialize managers
     this.waifuManager = new WaifuSpriteManager(
@@ -21,6 +26,10 @@ export class WaifuApp {
     
     this.affectionManager = new AffectionManager(storageProvider, logger);
     this.todoManager = new TodoManager(storageProvider, logger);
+    this.tooltipManager = new TooltipManager(logger);
+    
+    // Quote timer for random quotes
+    this.quoteTimer = null;
     
     // Set up UI elements
     this.affectionManager.setUIElements(
@@ -48,6 +57,9 @@ export class WaifuApp {
       
       // Start waifu cycling
       this.waifuManager.startCycling();
+      
+      // Start quote system
+      this.startQuoteSystem();
       
       // Set up storage sync
       this.setupStorageSync();
@@ -84,6 +96,9 @@ export class WaifuApp {
         document.getElementById('waifu-container')
       );
       this.updateWaifuMood();
+      
+      // Show random waifu click quote
+      this.showEventQuote('waifuClick');
     });
     
     // Override todo manager event handlers to include affection logic
@@ -94,6 +109,8 @@ export class WaifuApp {
           CONFIG.AFFECTION.TASK_COMPLETION,
           document.getElementById('waifu-container')
         );
+        // Show task completion quote
+        this.showEventQuote('taskComplete');
       }
       this.updateWaifuMood();
     };
@@ -111,6 +128,8 @@ export class WaifuApp {
     if (this.todoManager.add(text)) {
       input.value = '';
       this.updateWaifuMood();
+      // Show new task quote
+      this.showEventQuote('newTask');
     }
   }
 
@@ -173,8 +192,79 @@ export class WaifuApp {
     }
   }
 
+  // Quote System Methods
+  startQuoteSystem() {
+    if (!CONFIG.TOOLTIP.AUTO_ENABLED) return;
+    
+    this.logger.log('Starting quote system...');
+    
+    // Show initial quote after a short delay
+    setTimeout(() => {
+      this.showRandomQuote();
+    }, 5000);
+    
+    // Set up regular quote timer
+    this.quoteTimer = setInterval(() => {
+      this.showRandomQuote();
+    }, CONFIG.TOOLTIP.RANDOM_INTERVAL);
+  }
+
+  showRandomQuote() {
+    if (this.tooltipManager.isCurrentlyVisible()) {
+      this.logger.log('Tooltip already visible, skipping random quote');
+      return;
+    }
+
+    const moodLevel = this.getMoodBasedOnProgress();
+    const quote = this.quoteService.getRandomQuote(moodLevel);
+    
+    this.tooltipManager.show(
+      quote,
+      CONFIG.TOOLTIP.DISPLAY_DURATION,
+      document.getElementById('waifu-container')
+    );
+  }
+
+  showEventQuote(eventType) {
+    const quote = this.quoteService.getQuoteByEvent(eventType);
+    
+    this.tooltipManager.show(
+      quote,
+      CONFIG.TOOLTIP.EVENT_DURATION,
+      document.getElementById('waifu-container')
+    );
+  }
+
+  getMoodBasedOnProgress() {
+    const taskProgress = this.todoManager.getProgress();
+    const affectionLevel = this.affectionManager.getLevel();
+    
+    // Determine mood based on tasks and affection
+    if (affectionLevel >= CONFIG.AFFECTION_LEVELS.VERY_HIGH && taskProgress.completed > taskProgress.total * 0.7) {
+      return 'happy';
+    } else if (affectionLevel <= CONFIG.AFFECTION_LEVELS.LOW || taskProgress.total > 10) {
+      return 'sad';
+    } else {
+      return 'neutral';
+    }
+  }
+
+  stopQuoteSystem() {
+    if (this.quoteTimer) {
+      clearInterval(this.quoteTimer);
+      this.quoteTimer = null;
+      this.logger.log('Quote system stopped');
+    }
+  }
+
   destroy() {
     this.waifuManager.stopCycling();
+    this.stopQuoteSystem();
+    
+    if (this.tooltipManager) {
+      this.tooltipManager.destroy();
+    }
+    
     this.logger.log('Application destroyed');
   }
 }

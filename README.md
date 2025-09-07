@@ -1,10 +1,34 @@
-# Waifu AI Side Panel with Todo List
+# Waifu AI Side Panel with Todo List & Interactive Quotes
 
-A Chrome extension that provides a native browser side panel featuring an animated waifu character with an integrated todo list for productivity tracking.
+A Chrome extension that provides a native browser side panel featuring an animated waifu character with an integrated todo list, affection system, and interactive kawaii quote tooltips for enhanced productivity and engagement.
 
 ## Features
 
-### 🎨 Waifu Character System
+### 🌸 Interactive Quote System
+- **Kawaii Tooltips**: Beautiful speech bubble tooltips with gradient backgrounds and sparkle effects
+- **Random Quotes**: Displays encouraging quotes every 10 seconds with 20+ predefined kawaii messages
+- **Event-Triggered Quotes**: Contextual quotes for specific actions:
+  - 📝 **Task Completion**: *"Yatta! Task completed! ♪(´▽｀)"*
+  - 👆 **Waifu Interaction**: *"Kyaa~ That tickles! (◕‿◕)♡"*  
+  - ➕ **New Task**: *"Ooh, a new adventure! ☆"*
+- **Mood-Aware Quotes**: Quotes adapt based on task progress and affection levels
+- **Future LLM Ready**: Modular architecture prepared for AI-powered personalized quotes
+- **Smooth Animations**: Floating tooltips with subtle bounce effects and auto-positioning
+
+## Features
+
+### � Interactive Quote System
+- **Kawaii Tooltips**: Beautiful speech bubble tooltips with gradient backgrounds and sparkle effects
+- **Random Quotes**: Displays encouraging quotes every 10 seconds with 20+ predefined kawaii messages
+- **Event-Triggered Quotes**: Contextual quotes for specific actions:
+  - 📝 **Task Completion**: *"Yatta! Task completed! ♪(´▽｀)"*
+  - 👆 **Waifu Interaction**: *"Kyaa~ That tickles! (◕‿◕)♡"*  
+  - ➕ **New Task**: *"Ooh, a new adventure! ☆"*
+- **Mood-Aware Quotes**: Quotes adapt based on task progress and affection levels
+- **Future LLM Ready**: Modular architecture prepared for AI-powered personalized quotes
+- **Smooth Animations**: Floating tooltips with subtle bounce effects and auto-positioning
+
+### �🎨 Waifu Character System
 - **Animated Sprites**: Cycles through different character expressions every 5 seconds
 - **Reactive Emotions**: Character reacts to your productivity:
   - 😊 **Happy** (`saber_happy.png`) - All tasks completed or high affection
@@ -39,32 +63,110 @@ A Chrome extension that provides a native browser side panel featuring an animat
 
 ## Technical Architecture
 
-### File Structure
+### Modular File Structure
 ```
 WaifuAIV1/
-├── manifest.json          # Chrome extension configuration
-├── background.js          # Service worker for side panel management
-├── sidebar.html           # Main UI structure
-├── sidebar.css            # Styling and layout
-├── sidebar.js             # SOLID/DRY refactored core functionality
-├── assets/                # Character sprites
+├── manifest.json              # Chrome extension configuration
+├── background.js              # Service worker for side panel management  
+├── sidebar.html               # Main UI structure (uses ES6 modules)
+├── sidebar.css                # Styling, layout, and tooltip designs
+├── js/                        # Modular JavaScript architecture
+│   ├── main.js                # Application bootstrap entry point
+│   ├── config.js              # Centralized configuration constants
+│   ├── WaifuApp.js            # Main application coordinator
+│   ├── interfaces/            # TypeScript-style interfaces for contracts
+│   │   ├── IStorageProvider.js # Storage abstraction interface
+│   │   └── ILogger.js         # Logging abstraction interface
+│   ├── providers/             # External API implementations
+│   │   ├── ChromeStorageProvider.js # Chrome storage implementation
+│   │   └── ConsoleLogger.js   # Console logging implementation
+│   ├── models/                # Domain models and business logic
+│   │   ├── Todo.js            # Todo item model with validation
+│   │   └── AffectionLevel.js  # Affection system model
+│   ├── services/              # Reusable business services
+│   │   ├── DataValidationService.js # Input validation and sanitization
+│   │   ├── AnimationService.js      # UI animation utilities
+│   │   └── QuoteService.js    # Quote management and selection
+│   └── managers/              # Feature-specific managers
+│       ├── WaifuSpriteManager.js # Sprite cycling and mood display
+│       ├── AffectionManager.js   # Affection system management  
+│       ├── TodoManager.js        # Todo CRUD operations
+│       └── TooltipManager.js     # Quote tooltip display system
+├── assets/                    # Character sprites
 │   ├── saber_angry.png
 │   ├── saber_happy.png
 │   ├── saber_neutral.png
 │   ├── saber_plooshie.png
 │   └── saber_pouting.png
-└── README.md              # This documentation
+└── README.md                  # This comprehensive documentation
 ```
 
-### SOLID/DRY Architecture
+### Clean Architecture Implementation
+
+The extension follows **Clean Architecture** principles with clear separation of concerns:
+
+#### **Presentation Layer** (UI Components)
+- `sidebar.html` - Structure and semantic markup
+- `sidebar.css` - Styling, animations, and responsive design
+- `TooltipManager.js` - UI tooltip rendering and positioning
+
+#### **Application Layer** (Use Cases & Coordination)
+- `WaifuApp.js` - Main application coordinator orchestrating all features
+- `main.js` - Bootstrap entry point with dependency injection setup
+
+#### **Domain Layer** (Business Logic)
+```javascript
+// Domain Models with business rules
+class Todo {
+  toggle() // Business logic for task completion
+  isValid() // Domain validation rules
+}
+
+class AffectionLevel {
+  increase(amount) // Affection calculation rules
+  getMoodLevel() // Mood determination logic
+}
+```
+
+#### **Infrastructure Layer** (External Concerns)
+```javascript
+// Storage abstraction
+class ChromeStorageProvider implements IStorageProvider {
+  async get(key) // Chrome API integration
+  async set(key, value) // Persistence handling
+}
+
+// Logging abstraction  
+class ConsoleLogger implements ILogger {
+  log(message) // Development logging
+  error(message) // Error tracking
+}
+```
+
+#### **Service Layer** (Cross-Cutting Concerns)
+```javascript
+class QuoteService {
+  getRandomQuote(mood) // Quote selection algorithm
+  getQuoteByEvent(eventType) // Event-based quote logic
+}
+
+class AnimationService {
+  static fadeIn(element) // Reusable animations
+  static createAffectionBoost(container) // UI feedback
+}
+```
+
+### SOLID Principles Implementation
 
 #### **Single Responsibility Principle (SRP)**
 Each class has one clear responsibility:
-- `WaifuSpriteManager`: Handles sprite cycling and mood-based sprite selection
-- `AffectionManager`: Manages affection levels, persistence, and UI updates
-- `TodoManager`: Handles todo CRUD operations and rendering
-- `AnimationService`: Provides reusable animation utilities
-- `DataValidationService`: Validates and sanitizes data
+- `WaifuSpriteManager`: Sprite cycling and mood-based sprite selection
+- `AffectionManager`: Affection levels, persistence, and UI updates
+- `TodoManager`: Todo CRUD operations and rendering
+- `TooltipManager`: Tooltip display, positioning, and animations
+- `QuoteService`: Quote selection and mood-based quote logic
+- `AnimationService`: Reusable animation utilities
+- `DataValidationService`: Data validation and sanitization
 
 #### **Open/Closed Principle (OCP)**
 - Classes are open for extension but closed for modification
@@ -92,8 +194,10 @@ Each class has one clear responsibility:
 #### **Don't Repeat Yourself (DRY)**
 - Common animation logic centralized in `AnimationService`
 - Data validation extracted to `DataValidationService`
+- Quote logic consolidated in `QuoteService`
 - Configuration constants defined in `CONFIG` object
-- Reusable color schemes and UI patterns
+- Reusable tooltip positioning logic in `TooltipManager`
+- Shared UI patterns and color schemes in CSS
 
 ### Core Components
 
@@ -112,7 +216,7 @@ Each class has one clear responsibility:
 ```html
 #app-container
 ├── #waifu-container        # Character display area with affection bar
-│   ├── #waifu-sprite       # Animated character image
+│   ├── #waifu-sprite       # Animated character image (click interaction)
 │   └── #affection-container # Affection level display
 │       ├── #affection-label
 │       └── #affection-bar
@@ -125,49 +229,121 @@ Each class has one clear responsibility:
     │   └── #add-todo-btn   # Add button
     ├── #todo-list          # Task list container
     └── #todo-stats         # Task statistics
+
+<!-- Dynamically Created by TooltipManager -->
+.waifu-tooltip              # Floating quote tooltips
+├── .tooltip-content        # Speech bubble container
+│   ├── .tooltip-text       # Quote text content
+│   └── .tooltip-arrow      # Speech bubble arrow
+└── ::before                # Sparkle decoration (✨)
 ```
 
-#### 4. Application Architecture (`sidebar.js`)
+#### 4. Modular Application Architecture
 
-##### **Abstraction Layer**
+##### **Application Bootstrap** (`main.js`)
 ```javascript
-// Interfaces for dependency injection
-class IStorageProvider { /* Storage contract */ }
-class ILogger { /* Logging contract */ }
+// Dependency injection setup
+const storageProvider = new ChromeStorageProvider();
+const logger = new ConsoleLogger();
 
-// Concrete implementations
-class ChromeStorageProvider extends IStorageProvider
-class ConsoleLogger extends ILogger
+// Application initialization
+const app = new WaifuApp(storageProvider, logger);
+await app.initialize();
 ```
 
-##### **Domain Models**
+##### **Main Application Coordinator** (`WaifuApp.js`)
 ```javascript
-class Todo {
-  constructor(text, id, completed, createdAt)
-  toggle() // Returns new completion status
-  isValid() // Validates todo data
-  static fromObject(obj) // Factory method
-}
+class WaifuApp {
+  constructor(storageProvider, logger) {
+    // Initialize all feature managers
+    this.quoteService = new QuoteService(logger);
+    this.waifuManager = new WaifuSpriteManager(spriteElement, logger);
+    this.affectionManager = new AffectionManager(storageProvider, logger);
+    this.todoManager = new TodoManager(storageProvider, logger);
+    this.tooltipManager = new TooltipManager(logger);
+  }
 
-class AffectionLevel {
-  increase(amount) // Increases affection with bounds checking
-  getPercentage() // For UI display
-  getMoodLevel() // Returns mood string for sprite selection
+  async initialize() {
+    // Load data, start systems, setup handlers
+    await this.loadData();
+    this.waifuManager.startCycling();
+    this.startQuoteSystem(); // New quote system
+    this.setupEventHandlers();
+  }
+
+  startQuoteSystem() {
+    // Random quotes every 10 seconds
+    setInterval(() => this.showRandomQuote(), 10000);
+  }
+
+  showEventQuote(eventType) {
+    // Context-aware quotes for user actions
+    const quote = this.quoteService.getQuoteByEvent(eventType);
+    this.tooltipManager.show(quote, 3000);
+  }
 }
 ```
 
-##### **Service Layer**
+##### **Quote & Tooltip System**
 ```javascript
-class DataValidationService {
-  static validateTodos(todos) // Sanitizes todo data
-  static validateAffectionLevel(level) // Validates affection
+class QuoteService {
+  quotes = [
+    "Kyaa~ You're working so hard! (◕‿◕)♡",
+    "Ganbatte kudasai! Fighting~! ٩(◕‿◕)۶",
+    "Your hard work makes me happy! ♡⃛",
+    // ... 20+ kawaii quotes
+  ];
+
+  getRandomQuote(mood = null) {
+    // Returns mood-specific or general quotes
+    const quoteArray = mood ? this.moodQuotes[mood] : this.quotes;
+    return quoteArray[Math.floor(Math.random() * quoteArray.length)];
+  }
+
+  getQuoteByEvent(eventType) {
+    // Event-specific quotes for task completion, waifu clicks, etc.
+    return this.eventQuotes[eventType] || this.getRandomQuote();
+  }
 }
 
-class AnimationService {
-  static fadeIn(element) // Reusable fade-in animation
-  static slideOut(element) // Reusable slide-out animation
-  static bounce(element) // Reusable bounce animation
-  static createAffectionBoost(container, amount) // Affection popup
+class TooltipManager {
+  show(text, duration, targetElement) {
+    // Creates beautiful speech bubble tooltips
+    // - Pink gradient backgrounds with sparkle effects
+    // - Smart positioning to avoid screen edges
+    // - Floating animations with gentle bounce
+    // - Auto-hide after specified duration
+  }
+
+  positionTooltip(targetElement) {
+    // Intelligent positioning above waifu container
+    // Adjusts for screen boundaries and side panel width
+  }
+}
+```
+
+##### **Enhanced Manager Classes**
+```javascript
+class WaifuSpriteManager {
+  startCycling() // Auto sprite cycling every 5 seconds
+  setSpriteByMood(taskProgress, affectionMood) // Mood-based sprites
+  addClickHandler(callback) // Click interaction with quote triggers
+}
+
+class AffectionManager {
+  async load() // Load from Chrome storage
+  async save() // Persist to Chrome storage  
+  increase(amount, container) // Increase with visual feedback animation
+  updateUI() // Sync affection bar display
+}
+
+class TodoManager {
+  async load() // Load todos with data validation
+  async save() // Save todos with error handling
+  add(text) // Add new todo with quote trigger
+  toggle(index) // Toggle completion with quote trigger
+  delete(index) // Delete with slide-out animation
+  getProgress() // Get completion statistics for mood calculation
 }
 ```
 
@@ -204,6 +380,12 @@ class WaifuApp {
   setupEventHandlers() // Wire up UI interactions
   updateWaifuMood() // Coordinate mood changes
   setupStorageSync() // Cross-instance synchronization
+  
+  // Quote System Integration
+  startQuoteSystem() // Initialize random quote timer
+  showRandomQuote() // Display mood-aware quotes
+  showEventQuote(eventType) // Show context-specific quotes
+  stopQuoteSystem() // Cleanup quote timers
 }
 ```
 
@@ -213,6 +395,12 @@ class WaifuApp {
 - **Typography**: Segoe UI font family, 14px base size
 - **Responsive**: Media queries for different side panel widths (300px-400px+)
 - **Components**: Modular styling for waifu, affection bar, todo items, inputs, buttons
+- **Tooltip Styling**: 
+  - Pink gradient speech bubbles with shadow effects
+  - Floating animations with subtle bounce (@keyframes tooltipFloat)
+  - Sparkle decorations (✨) with rotation animations
+  - Smart positioning and responsive breakpoints
+  - Backdrop blur effects for modern glass-morphism appearance
 
 #### 5. Core Logic (`sidebar.js`)
 
@@ -274,6 +462,49 @@ todos[]    // Current todo list
 
 ## Extension Points & Customization
 
+### Quote System Customization
+The quote system is designed for easy extension and future LLM integration:
+
+#### **Adding Custom Quotes**
+```javascript
+// In QuoteService.js - add to existing arrays
+this.quotes.push("Your custom kawaii quote! ♡");
+
+// Add mood-specific quotes
+this.moodQuotes.happy.push("Custom happy quote! ✧");
+
+// Add event-specific quotes  
+this.eventQuotes.taskComplete.push("Custom completion quote! ♪");
+```
+
+#### **Future LLM API Integration**
+```javascript
+class QuoteService {
+  async getAIQuote(mood, context) {
+    // Future implementation for AI-powered quotes
+    const response = await fetch('/api/generate-quote', {
+      method: 'POST',
+      body: JSON.stringify({ mood, context, todos: context.todos })
+    });
+    return response.json().quote;
+  }
+}
+```
+
+#### **Tooltip Appearance Customization**
+```css
+/* Modify tooltip colors in sidebar.css */
+.tooltip-content {
+  background: linear-gradient(135deg, #your-color 0%, #your-color2 100%);
+  /* Customize gradient, shadows, borders */
+}
+
+/* Change sparkle effects */
+.tooltip-content::before {
+  content: '🌟'; /* Change sparkle emoji */
+}
+```
+
 ### Adding New Character Sprites
 1. Add image files to `assets/` folder
 2. Update the `sprites` array in `sidebar.js`
@@ -295,9 +526,10 @@ The todo system is modular and can be extended with:
 
 ### Character Behavior Extensions
 - **More Emotions**: Add new sprite files and reaction triggers
-- **Interactive Responses**: Add click handlers for character interaction
+- **Interactive Responses**: Enhanced click handlers with quote integration
 - **Voice/Sound**: Integrate Web Audio API for character sounds
 - **Animations**: Add CSS animations or sprite animation sequences
+- **Quote-Triggered Expressions**: Sync character sprites with quote moods
 
 ## Storage Schema
 
@@ -316,6 +548,27 @@ The todo system is modular and can be extended with:
   "affectionLevel": 42,
   "lastSaved": "2025-09-06T10:30:45.123Z"
 }
+```
+
+### Configuration Schema (`config.js`)
+```javascript
+export const CONFIG = {
+  SPRITES: [/* sprite file paths */],
+  AFFECTION: {
+    MAX: 100,
+    TASK_COMPLETION: 5,
+    WAIFU_CLICK: 2
+  },
+  SPRITE_CYCLE_INTERVAL: 5000,
+  ANIMATION_DURATION: 300,
+  AFFECTION_LEVELS: { /* mood thresholds */ },
+  TOOLTIP: {
+    RANDOM_INTERVAL: 10000,  // 10 seconds between random quotes
+    DISPLAY_DURATION: 4000,  // 4 seconds display time
+    EVENT_DURATION: 3000,    // 3 seconds for event quotes
+    AUTO_ENABLED: true       // Enable/disable quote system
+  }
+};
 ```
 
 ### Affection System
@@ -360,6 +613,24 @@ The todo system is modular and can be extended with:
 
 ## Future Enhancement Ideas
 
+### AI-Powered Quote System
+- **LLM Integration**: Connect to OpenAI, Anthropic, or local AI models
+- **Contextual Awareness**: Generate quotes based on:
+  - Current task content and difficulty
+  - Time of day and work patterns  
+  - User's productivity streaks
+  - Seasonal events and holidays
+- **Personality Development**: Evolving character personality over time
+- **Multi-language Support**: Generate quotes in different languages
+- **Voice Synthesis**: Text-to-speech for audio quotes
+
+### Enhanced Interactivity
+- **Quote Reactions**: User feedback system (like/dislike quotes)
+- **Custom Quote Requests**: Ask waifu for specific types of encouragement
+- **Conversation Mode**: Basic chat interface with the character
+- **Quote History**: View and favorite past quotes
+- **Sharing Features**: Share favorite quotes on social media
+
 ### Productivity Features
 - **Pomodoro Timer**: Integrate work/break cycles
 - **Daily Goals**: Set and track daily task targets
@@ -367,10 +638,11 @@ The todo system is modular and can be extended with:
 - **Rewards System**: Unlock new character expressions
 
 ### Character Enhancements
-- **Multiple Characters**: Character selection system
-- **Seasonal Themes**: Holiday or seasonal sprite sets
-- **Character Customization**: User-uploadable sprites
-- **Interactive Dialogue**: Text-based character interaction
+- **Multiple Characters**: Character selection system with unique quote sets
+- **Seasonal Themes**: Holiday or seasonal sprite sets with themed quotes
+- **Character Customization**: User-uploadable sprites with custom quote voices
+- **Interactive Dialogue**: Advanced text-based character interaction
+- **Character Progression**: Unlock new quotes and expressions over time
 
 ### Integration Features
 - **Calendar Sync**: Google Calendar integration
@@ -385,4 +657,12 @@ This project features character sprites that should be properly licensed for dis
 ---
 
 *Last Updated: September 6, 2025*
-*Version: 0.4 - SOLID/DRY Architecture Refactoring*
+*Version: 0.5 - Interactive Quote System & Modular Architecture*
+
+**New in v0.5:**
+- 🌸 Interactive kawaii quote tooltip system with 20+ predefined quotes
+- 🏗️ Complete modular architecture with clean separation of concerns  
+- 💬 Event-triggered contextual quotes for user actions
+- ✨ Beautiful floating speech bubble tooltips with sparkle effects
+- 🤖 LLM-ready architecture for future AI-powered personalized quotes
+- 📁 Organized file structure following clean architecture principles

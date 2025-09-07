@@ -333,3 +333,125 @@ body {
     height: 200px;
   }
 }
+
+/* Waifu Tooltip Styles */
+.waifu-tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 280px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.waifu-tooltip.hidden {
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  visibility: hidden;
+}
+
+.waifu-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+  animation: tooltipFloat 6s ease-in-out infinite;
+  pointer-events: auto; /* Enable click interactions */
+  cursor: pointer;
+}
+
+/* Hover effect to indicate clickability */
+.waifu-tooltip.visible:hover {
+  animation-play-state: paused; /* Pause floating during hover */
+  transform: translateY(-2px) scale(1.05);
+}
+
+.waifu-tooltip.visible:hover .tooltip-content {
+  background: linear-gradient(135deg, #ff85c1 0%, #ff3fa4 50%, #e91e63 100%);
+  box-shadow: 0 12px 40px rgba(255, 105, 180, 0.5);
+  transform: scale(1.02);
+}
+
+.waifu-tooltip.visible:active .tooltip-content {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.tooltip-content {
+  position: relative;
+  background: linear-gradient(135deg, #ff69b4 0%, #ff1493 50%, #dc143c 100%);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(255, 105, 180, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.tooltip-text {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  display: block;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #ff69b4;
+  filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.3));
+}
+
+/* Floating animation for tooltip */
+@keyframes tooltipFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.02);
+  }
+}
+
+/* Kawaii sparkle effect */
+.tooltip-content::before {
+  content: '✨';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 12px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.7;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(180deg) scale(1.2);
+  }
+}
+
+/* Responsive tooltip */
+@media (max-width: 320px) {
+  .waifu-tooltip {
+    max-width: 220px;
+  }
+  
+  .tooltip-content {
+    padding: 10px 12px;
+  }
+  
+  .tooltip-text {
+    font-size: 12px;
+  }
+}

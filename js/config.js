@@ -23,5 +23,11 @@ export const CONFIG = {
     HIGH: 60,
     MEDIUM: 30,
     LOW: 20
+  },
+  TOOLTIP: {
+    RANDOM_INTERVAL: 10000, // 10 seconds
+    DISPLAY_DURATION: 4000, // 4 seconds
+    EVENT_DURATION: 3000,   // 3 seconds for event-triggered quotes
+    AUTO_ENABLED: true
   }
 };
