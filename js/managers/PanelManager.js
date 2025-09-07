@@ -7,6 +7,7 @@ class PanelManager {
         this.panels = new Map();
         this.storageKey = 'waifu_panel_states';
         this.isInitialized = false;
+        this.animatingPanels = new Set(); // Track panels currently animating
     }
 
     /**
@@ -23,6 +24,9 @@ class PanelManager {
         
         // Apply saved states
         this.applyPanelStates();
+        
+        // Set up mutation observer to detect content changes
+        this.setupContentObserver();
         
         this.isInitialized = true;
         console.log('PanelManager initialized');
@@ -68,6 +72,11 @@ class PanelManager {
             return;
         }
         
+        // Prevent rapid clicking during animation
+        if (this.animatingPanels.has(panelId)) {
+            return;
+        }
+        
         const isCollapsed = panel.classList.contains('collapsed');
         
         if (isCollapsed) {
@@ -90,7 +99,15 @@ class PanelManager {
         
         if (!content) return;
         
-        // Remove collapsed class
+        const panelId = panel.id || panel.dataset.panelId;
+        if (panelId) {
+            this.animatingPanels.add(panelId);
+        }
+        
+        // Clear any ongoing transitions
+        content.style.transition = '';
+        
+        // Remove collapsed class immediately
         panel.classList.remove('collapsed');
         
         // Update button text
@@ -99,24 +116,50 @@ class PanelManager {
             collapseBtn.title = 'Collapse section';
         }
         
-        // Get the natural height
+        // Force layout recalculation to get accurate height
+        document.body.offsetHeight; // Force reflow of entire document
+        
+        // Get the natural height by temporarily showing content with proper visibility
         content.style.height = 'auto';
-        const targetHeight = content.scrollHeight + 'px';
+        content.style.opacity = '1';
+        content.style.visibility = 'visible';
+        
+        // Force reflow to ensure accurate measurement
+        document.body.offsetHeight;
+        let targetHeight = content.scrollHeight;
+        
+        // Double-check with getBoundingClientRect if scrollHeight seems wrong
+        if (targetHeight <= 0) {
+            const rect = content.getBoundingClientRect();
+            targetHeight = rect.height;
+        }
+        
+        // Ensure we have a valid target height
+        if (targetHeight <= 0) {
+            targetHeight = 200; // Reasonable fallback
+        }
+        
+        // Start from collapsed state
         content.style.height = '0px';
+        content.style.opacity = '0';
         
         // Force reflow
         content.offsetHeight;
         
-        // Animate to target height
+        // Set up and start animation
         content.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
-        content.style.height = targetHeight;
+        content.style.height = targetHeight + 'px';
         content.style.opacity = '1';
         
-        // Clean up after animation
+        // Clean up after animation completes
         setTimeout(() => {
             content.style.height = 'auto';
             content.style.transition = '';
-        }, 300);
+            content.style.visibility = '';
+            if (panelId) {
+                this.animatingPanels.delete(panelId);
+            }
+        }, 320); // Slightly longer than animation to ensure completion
     }
 
     /**
@@ -129,32 +172,94 @@ class PanelManager {
         
         if (!content) return;
         
-        // Set current height
-        content.style.height = content.scrollHeight + 'px';
+        const panelId = panel.id || panel.dataset.panelId;
+        if (panelId) {
+            this.animatingPanels.add(panelId);
+        }
+        
+        // Clear any ongoing transitions
+        content.style.transition = '';
+        
+        // Force layout recalculation to get accurate height
+        // This ensures we measure the height after any sibling panel state changes
+        document.body.offsetHeight; // Force reflow of entire document
+        
+        // Get current height with multiple fallbacks for accuracy
+        let currentHeight = content.scrollHeight;
+        
+        // Debug logging for edge cases
+        console.log(`Collapsing ${panelId}: initial scrollHeight = ${currentHeight}`);
+        
+        // If scrollHeight seems wrong, try getBoundingClientRect
+        if (currentHeight <= 0) {
+            const rect = content.getBoundingClientRect();
+            currentHeight = rect.height;
+            console.log(`${panelId}: Using getBoundingClientRect height = ${currentHeight}`);
+        }
+        
+        // Final fallback: force content to be visible and measure
+        if (currentHeight <= 0) {
+            const originalDisplay = content.style.display;
+            const originalHeight = content.style.height;
+            const originalOpacity = content.style.opacity;
+            const originalVisibility = content.style.visibility;
+            
+            content.style.display = 'block';
+            content.style.height = 'auto';
+            content.style.opacity = '1';
+            content.style.visibility = 'hidden'; // Hidden but still takes space
+            
+            // Force reflow
+            document.body.offsetHeight;
+            currentHeight = content.scrollHeight;
+            console.log(`${panelId}: Fallback measurement height = ${currentHeight}`);
+            
+            // Restore original state
+            content.style.display = originalDisplay;
+            content.style.height = originalHeight;
+            content.style.opacity = originalOpacity;
+            content.style.visibility = originalVisibility;
+        }
+        
+        // Ensure we have a valid height
+        if (currentHeight <= 0) {
+            currentHeight = 200; // Reasonable fallback
+            console.log(`${panelId}: Using fallback height = ${currentHeight}`);
+        }
+        
+        // Set explicit height and ensure it's set
+        content.style.height = currentHeight + 'px';
+        content.style.opacity = '1';
         
         // Force reflow
         content.offsetHeight;
         
-        // Animate to collapsed state
+        // Set up and start animation
         content.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
         content.style.height = '0px';
         content.style.opacity = '0';
         
-        // Add collapsed class after animation starts
-        setTimeout(() => {
-            panel.classList.add('collapsed');
-        }, 10);
-        
-        // Update button text
+        // Update button text immediately
         if (collapseBtn) {
             collapseBtn.textContent = '+';
             collapseBtn.title = 'Expand section';
         }
         
-        // Clean up after animation
+        // Add collapsed class immediately (no delay)
+        panel.classList.add('collapsed');
+        
+        // Clean up after animation completes
         setTimeout(() => {
             content.style.transition = '';
-        }, 300);
+            // Ensure the panel stays collapsed
+            content.style.height = '0px';
+            content.style.opacity = '0';
+            console.log(`${panelId}: Animation complete, final height = ${content.style.height}`);
+            
+            if (panelId) {
+                this.animatingPanels.delete(panelId);
+            }
+        }, 320); // Slightly longer than animation to ensure completion
     }
 
     /**
@@ -235,12 +340,13 @@ class PanelManager {
                          document.querySelector(`[data-panel-id="${panelId}"]`);
             
             if (panel) {
+                const content = panel.querySelector('.panel-content');
+                const collapseBtn = panel.querySelector('.collapse-btn');
+                
                 if (collapsed) {
                     // Apply collapsed state without animation
-                    const content = panel.querySelector('.panel-content');
-                    const collapseBtn = panel.querySelector('.collapse-btn');
-                    
                     if (content) {
+                        content.style.transition = '';
                         content.style.height = '0px';
                         content.style.opacity = '0';
                         panel.classList.add('collapsed');
@@ -253,10 +359,9 @@ class PanelManager {
                 } else {
                     // Ensure expanded state
                     panel.classList.remove('collapsed');
-                    const content = panel.querySelector('.panel-content');
-                    const collapseBtn = panel.querySelector('.collapse-btn');
                     
                     if (content) {
+                        content.style.transition = '';
                         content.style.height = 'auto';
                         content.style.opacity = '1';
                     }
@@ -265,6 +370,29 @@ class PanelManager {
                         collapseBtn.textContent = '−';
                         collapseBtn.title = 'Collapse section';
                     }
+                }
+            }
+        });
+        
+        // Reset any panels that weren't in saved states to expanded state
+        const panels = document.querySelectorAll('.collapsible-panel');
+        panels.forEach(panel => {
+            const panelId = panel.id || panel.dataset.panelId;
+            if (panelId && !this.panels.has(panelId)) {
+                const content = panel.querySelector('.panel-content');
+                const collapseBtn = panel.querySelector('.collapse-btn');
+                
+                panel.classList.remove('collapsed');
+                
+                if (content) {
+                    content.style.transition = '';
+                    content.style.height = 'auto';
+                    content.style.opacity = '1';
+                }
+                
+                if (collapseBtn) {
+                    collapseBtn.textContent = '−';
+                    collapseBtn.title = 'Collapse section';
                 }
             }
         });
@@ -335,11 +463,90 @@ class PanelManager {
         });
     }
 
+    /**
+     * Set up mutation observer to preserve collapsed states when content changes
+     */
+    setupContentObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    const targetPanel = mutation.target.closest('.collapsible-panel');
+                    if (targetPanel && targetPanel.classList.contains('collapsed')) {
+                        // Preserve collapsed state after content change
+                        this.preserveCollapsedState(targetPanel);
+                    }
+                }
+            });
+        });
+
+        // Observe all panel content areas
+        const panels = document.querySelectorAll('.panel-content');
+        panels.forEach(content => {
+            observer.observe(content, {
+                childList: true,
+                subtree: true
+            });
+        });
+
+        this.contentObserver = observer;
+    }
+
+    /**
+     * Preserve collapsed state after content changes
+     */
+    preserveCollapsedState(panel) {
+        if (!panel.classList.contains('collapsed')) return;
+        
+        const content = panel.querySelector('.panel-content');
+        if (!content) return;
+        
+        // Force the panel to stay collapsed with explicit styles
+        content.style.height = '0px';
+        content.style.opacity = '0';
+        content.style.overflow = 'hidden';
+        
+        // Also force the panel itself to not grow in flexbox
+        panel.style.flexGrow = '0';
+        panel.style.flexShrink = '0';
+        panel.style.flexBasis = 'auto';
+        panel.style.minHeight = 'auto';
+        panel.style.maxHeight = 'none';
+        
+        console.log(`Preserved collapsed state for ${panel.id}`);
+    }
+
+    /**
+     * Check and maintain all panel states - can be called after content updates
+     */
+    maintainPanelStates() {
+        const panels = document.querySelectorAll('.collapsible-panel');
+        panels.forEach(panel => {
+            if (panel.classList.contains('collapsed')) {
+                this.preserveCollapsedState(panel);
+            }
+        });
+    }
+
+    /**
+     * Public method to force a panel to stay collapsed
+     */
+    forceCollapsed(panelId) {
+        const panel = document.getElementById(panelId) || 
+                     document.querySelector(`[data-panel-id="${panelId}"]`);
+        
+        if (panel && panel.classList.contains('collapsed')) {
+            this.preserveCollapsedState(panel);
+        }
+    }
+
 /**
  * Cleanup method
  */
 cleanup() {
     // Remove event listeners if needed
+    if (this.contentObserver) {
+        this.contentObserver.disconnect();
+    }
     this.isInitialized = false;
 }
 }

@@ -129,6 +129,14 @@ export class TodoManager {
     
     this.renderList();
     this.updateCount();
+    
+    // Maintain panel collapsed states after content update
+    if (window.PanelManager && window.PanelManager.maintainPanelStates) {
+      // Use setTimeout to ensure DOM updates are complete
+      setTimeout(() => {
+        window.PanelManager.maintainPanelStates();
+      }, 0);
+    }
   }
 
   renderList() {

@@ -6,6 +6,8 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent flex container from shrinking this */
+  flex-grow: 0;   /* Prevent flex container from growing this */
 }
 
 .panel-header {
@@ -52,19 +54,33 @@
 
 .panel-content {
   padding: 15px;
-  transition: all 0.3s ease;
-  max-height: 1000px; /* Large enough for any content */
   overflow: hidden;
+  /* Remove conflicting transitions - JavaScript handles the animation */
 }
 
 /* Collapsed state */
 .collapsible-panel.collapsed .panel-content {
-  max-height: 0;
+  /* Remove max-height and opacity - JavaScript handles these */
   padding-top: 0;
   padding-bottom: 0;
-  opacity: 0;
 }
 
 .collapsible-panel.collapsed .collapse-btn {
   transform: rotate(45deg);
+}
+
+/* Force collapsed panels to stay collapsed even after content changes */
+.collapsible-panel.collapsed .panel-content {
+  height: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Additional flex prevention for collapsed panels */
+.collapsible-panel.collapsed {
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+  flex-basis: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
 }
