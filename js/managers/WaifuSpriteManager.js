@@ -27,6 +27,14 @@ export class WaifuSpriteManager {
     }
   }
 
+  updateCycleInterval(newInterval) {
+    this.stopCycling();
+    this.cycleInterval = setInterval(() => {
+      this.cycleRandomSprite();
+    }, newInterval);
+    this.logger.log(`Sprite cycle interval updated to ${newInterval}ms`);
+  }
+
   cycleRandomSprite() {
     const randomIndex = Math.floor(Math.random() * CONFIG.SPRITES.length);
     this.setSprite(CONFIG.SPRITES[randomIndex]);

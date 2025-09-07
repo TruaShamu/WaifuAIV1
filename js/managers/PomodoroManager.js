@@ -325,6 +325,37 @@ export class PomodoroManager {
     return Notification.permission === 'granted';
   }
 
+  updateSettings(settings) {
+    // Update timer durations
+    if (settings.workDuration) {
+      this.timer.workDuration = settings.workDuration;
+    }
+    if (settings.shortBreak) {
+      this.timer.shortBreakDuration = settings.shortBreak;
+    }
+    if (settings.longBreak) {
+      this.timer.longBreakDuration = settings.longBreak;
+    }
+    if (settings.sessionsUntilLongBreak) {
+      this.timer.sessionsUntilLongBreak = settings.sessionsUntilLongBreak;
+    }
+    
+    // Update notification settings
+    if (settings.notificationsEnabled !== undefined) {
+      this.notificationsEnabled = settings.notificationsEnabled;
+    }
+    
+    // Update auto-start settings
+    if (settings.autoStartBreaks !== undefined) {
+      this.timer.autoStartBreaks = settings.autoStartBreaks;
+    }
+    if (settings.autoStartWork !== undefined) {
+      this.timer.autoStartWork = settings.autoStartWork;
+    }
+    
+    this.logger.log('Pomodoro settings updated');
+  }
+
   destroy() {
     this.stopTimer();
     this.save();

@@ -9,6 +9,8 @@ import { AffectionManager } from './managers/AffectionManager.js';
 import { TodoManager } from './managers/TodoManager.js';
 import { TooltipManager } from './managers/TooltipManager.js';
 import { PomodoroManager } from './managers/PomodoroManager.js';
+import { SettingsManager } from './managers/SettingsManager.js';
+import { UIManager } from './managers/UIManager.js';
 import { QuoteService } from './services/QuoteService.js';
 
 export class WaifuApp {
@@ -20,6 +22,9 @@ export class WaifuApp {
     this.quoteService = new QuoteService(logger);
     
     // Initialize managers
+    this.settingsManager = new SettingsManager(storageProvider, logger);
+    this.uiManager = new UIManager(logger);
+    
     this.waifuManager = new WaifuSpriteManager(
       document.getElementById('waifu-sprite'),
       logger
@@ -67,6 +72,12 @@ export class WaifuApp {
     try {
       this.logger.log('Initializing Waifu AI Application...');
       
+      // Initialize UI Manager first
+      this.uiManager.initialize();
+      
+      // Load settings first
+      await this.settingsManager.load();
+      
       // Load data
       await Promise.all([
         this.affectionManager.load(),
@@ -74,8 +85,13 @@ export class WaifuApp {
         this.pomodoroManager.load()
       ]);
       
-      // Start waifu cycling
-      this.waifuManager.startCycling();
+      // Set up settings integration
+      this.setupSettingsIntegration();
+      
+      // Start waifu cycling - DISABLED
+      // this.waifuManager.startCycling();
+      // Ensure cycling is stopped
+      this.waifuManager.stopCycling();
       
       // Start quote system
       this.startQuoteSystem();
@@ -170,6 +186,121 @@ export class WaifuApp {
     this.waifuManager.setSpriteByMood(taskProgress, affectionMood);
   }
 
+  setupSettingsIntegration() {
+    // Set up UI Manager callbacks
+    this.uiManager.setViewChangeCallback((view) => {
+      if (view === 'settings') {
+        // Populate settings UI with current values
+        this.uiManager.populateSettings(this.settingsManager.getSettings());
+        this.setupSettingsEventHandlers();
+      }
+    });
+
+    // Set up settings change callback
+    this.settingsManager.onSettingsChange = (settings) => {
+      this.applySettings(settings);
+    };
+
+    // Apply initial settings
+    this.applySettings(this.settingsManager.getSettings());
+  }
+
+  setupSettingsEventHandlers() {
+    const container = document.querySelector('.settings-container');
+    
+    // Add event listeners for real-time settings updates
+    const inputs = container.querySelectorAll('input[type="number"], input[type="checkbox"]');
+    inputs.forEach(input => {
+      input.addEventListener('change', () => {
+        const newSettings = this.uiManager.getSettingsFromUI();
+        Object.keys(newSettings).forEach(key => {
+          this.settingsManager.set(key, newSettings[key]);
+        });
+      });
+    });
+
+    // Data management buttons
+    document.getElementById('reset-settings').addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        this.settingsManager.resetToDefaults();
+        this.uiManager.populateSettings(this.settingsManager.getSettings());
+      }
+    });
+
+    document.getElementById('export-settings').addEventListener('click', () => {
+      const settingsJson = this.settingsManager.exportSettings();
+      const blob = new Blob([settingsJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'waifu-ai-settings.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('import-settings').addEventListener('click', () => {
+      document.getElementById('import-file').click();
+    });
+
+    document.getElementById('import-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const success = this.settingsManager.importSettings(event.target.result);
+          if (success) {
+            this.uiManager.populateSettings(this.settingsManager.getSettings());
+            alert('Settings imported successfully!');
+          } else {
+            alert('Failed to import settings. Please check the file format.');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  applySettings(settings) {
+    // Apply Pomodoro settings (pass in minutes, PomodoroManager will convert to seconds)
+    if (this.pomodoroManager.timer) {
+      this.pomodoroManager.updateSettings({
+        workDuration: settings.pomodoroWorkDuration,
+        shortBreak: settings.pomodoroShortBreak,
+        longBreak: settings.pomodoroLongBreak,
+        sessionsUntilLongBreak: settings.pomodoroSessionsUntilLongBreak,
+        notificationsEnabled: settings.pomodoroNotificationsEnabled,
+        autoStartBreaks: settings.pomodoroAutoStartBreaks,
+        autoStartWork: settings.pomodoroAutoStartWork
+      });
+    }
+
+    // Apply Affection settings
+    CONFIG.AFFECTION.TASK_COMPLETION = settings.affectionTaskCompletion;
+    CONFIG.AFFECTION.WAIFU_CLICK = settings.affectionWaifuClick;
+    CONFIG.AFFECTION.POMODORO_WORK_SESSION = settings.affectionPomodoroWork;
+    CONFIG.AFFECTION.POMODORO_BREAK_SESSION = settings.affectionPomodoroBreak;
+
+    // Apply Quote settings
+    CONFIG.TOOLTIP.RANDOM_INTERVAL = settings.quoteRandomInterval * 1000;
+    CONFIG.TOOLTIP.DISPLAY_DURATION = settings.quoteDisplayDuration * 1000;
+    CONFIG.TOOLTIP.EVENT_DURATION = settings.quoteEventDuration * 1000;
+    CONFIG.TOOLTIP.AUTO_ENABLED = settings.quoteAutoEnabled;
+
+    // Apply Sprite settings
+    CONFIG.SPRITE_CYCLE_INTERVAL = settings.spriteCycleInterval * 1000;
+
+    // Restart systems with new settings
+    if (settings.quoteAutoEnabled) {
+      this.startQuoteSystem();
+    } else {
+      this.stopQuoteSystem();
+    }
+
+    // this.waifuManager.updateCycleInterval(CONFIG.SPRITE_CYCLE_INTERVAL); // DISABLED - No auto cycling
+
+    this.logger.log('Settings applied successfully');
+  }
+
   setupStorageSync() {
     this.storageProvider.onChange((changes) => {
       if (changes.todos) {
@@ -238,6 +369,14 @@ export class WaifuApp {
     this.quoteTimer = setInterval(() => {
       this.showRandomQuote();
     }, CONFIG.TOOLTIP.RANDOM_INTERVAL);
+  }
+
+  stopQuoteSystem() {
+    if (this.quoteTimer) {
+      clearInterval(this.quoteTimer);
+      this.quoteTimer = null;
+      this.logger.log('Quote system stopped');
+    }
   }
 
   showRandomQuote() {
