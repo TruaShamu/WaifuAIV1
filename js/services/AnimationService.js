@@ -62,4 +62,12 @@ export class AnimationService {
     container.appendChild(boost);
     setTimeout(() => boost.remove(), 1500);
   }
+
+  static addFloatingAnimation(element) {
+    element.classList.add('floating-animation');
+  }
+
+  static removeFloatingAnimation(element) {
+    element.classList.remove('floating-animation');
+  }
 }

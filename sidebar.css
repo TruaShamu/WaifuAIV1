@@ -420,6 +420,11 @@ body {
   }
 }
 
+/* General floating animation class */
+.floating-animation {
+  animation: tooltipFloat 6s ease-in-out infinite;
+}
+
 /* Kawaii sparkle effect */
 .tooltip-content::before {
   content: '✨';

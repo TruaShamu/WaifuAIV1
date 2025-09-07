@@ -8,7 +8,6 @@ import { AnimationService } from '../services/AnimationService.js';
 export class TooltipManager {
   constructor(logger) {
     this.logger = logger;
-    this.animationService = new AnimationService();
     this.tooltip = null;
     this.isVisible = false;
     this.hideTimeout = null;
@@ -75,7 +74,7 @@ export class TooltipManager {
     this.isVisible = true;
 
     // Add floating animation
-    this.animationService.addFloatingAnimation(this.tooltip);
+    AnimationService.addFloatingAnimation(this.tooltip);
 
     this.logger.log(`Showing tooltip: ${text.substring(0, 30)}...`);
 
@@ -93,7 +92,7 @@ export class TooltipManager {
     this.isVisible = false;
 
     // Remove floating animation
-    this.animationService.removeFloatingAnimation(this.tooltip);
+    AnimationService.removeFloatingAnimation(this.tooltip);
 
     if (this.hideTimeout) {
       clearTimeout(this.hideTimeout);

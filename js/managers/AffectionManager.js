@@ -81,6 +81,10 @@ export class AffectionManager {
     return this.affection.getMoodLevel();
   }
 
+  getLevel() {
+    return this.affection.level;
+  }
+
   sync(newLevel) {
     this.affection = new AffectionLevel(newLevel);
     this.updateUI();

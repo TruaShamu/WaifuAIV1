@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Waifu AI Side Panel with Todo",
-  "version": "0.3",
+  "version": "0.5",
   "permissions": ["storage", "sidePanel", "notifications"],
   "action": {
     "default_icon": "assets/saber_neutral.png",
