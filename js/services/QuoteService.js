@@ -47,9 +47,45 @@ export class QuoteService {
         "I'm here for you, always... ♡",
         "Even sad days can have beautiful moments...",
         "Let's take it one step at a time... ♪"
+      ],
+      newTask: [
+        "Ooh, a new adventure! ☆",
+        "Let's tackle this together! ♪",
+        "I believe you can do it! ♡",
+        "Another chance to shine! ✧"
+      ],
+      pomodoroWorkStart: [
+        "Focus time! Let's get productive! 💪(◕‿◕)",
+        "Pomodoro session starting! Ganbatte! ♪",
+        "Work mode activated! I believe in you! ✧",
+        "Time to be amazing! Focus, focus! (｡◕‿◕｡)♡"
+      ],
+      pomodoroWorkComplete: [
+        "Fantastic work session! 🍅✨ Time for a break!",
+        "You're so focused! Break time deserved! ♪(´▽｀)",
+        "Amazing productivity! Rest those brain cells! ♡",
+        "Work session complete! You're incredible! ٩(◕‿◕)۶"
+      ],
+      pomodoroBreakStart: [
+        "Break time! Relax and recharge! ☕️(◕‿◕)",
+        "Rest well, you've earned it! ♪",
+        "Take a deep breath and relax! ✧",
+        "Break time magic! Restore your energy! ♡"
+      ],
+      pomodoroBreakComplete: [
+        "Break over! Ready to conquer more tasks? 💪",
+        "Recharged and ready! Let's go! ♪(´▽｀)",
+        "Feeling fresh? Time to focus again! ✧",
+        "Break complete! Back to being awesome! ♡"
+      ],
+      pomodoroLongBreakStart: [
+        "Long break time! You've earned this! 🌟",
+        "Extended rest mode! Relax completely! ♪",
+        "Long break magic! Take your time! ✧･ﾟ: *✧･ﾟ:*",
+        "Big break time! You've been amazing! ♡"
       ]
+    }
     };
-  }
 
   getRandomQuote(mood = null) {
     let quoteArray;

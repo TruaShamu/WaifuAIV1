@@ -14,7 +14,9 @@ export const CONFIG = {
   AFFECTION: {
     MAX: 100,
     TASK_COMPLETION: 5,
-    WAIFU_CLICK: 2
+    WAIFU_CLICK: 2,
+    POMODORO_WORK_SESSION: 8,
+    POMODORO_BREAK_SESSION: 3
   },
   SPRITE_CYCLE_INTERVAL: 5000,
   ANIMATION_DURATION: 300,
@@ -29,5 +31,14 @@ export const CONFIG = {
     DISPLAY_DURATION: 4000, // 4 seconds
     EVENT_DURATION: 3000,   // 3 seconds for event-triggered quotes
     AUTO_ENABLED: true
+  },
+  POMODORO: {
+    WORK_DURATION: 3,      // minutes
+    SHORT_BREAK: 1,         // minutes
+    LONG_BREAK: 2,         // minutes
+    SESSIONS_UNTIL_LONG_BREAK: 2,
+    NOTIFICATIONS_ENABLED: true,
+    AUTO_START_BREAKS: false,
+    AUTO_START_WORK: false
   }
 };

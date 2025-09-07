@@ -8,6 +8,7 @@ import { WaifuSpriteManager } from './managers/WaifuSpriteManager.js';
 import { AffectionManager } from './managers/AffectionManager.js';
 import { TodoManager } from './managers/TodoManager.js';
 import { TooltipManager } from './managers/TooltipManager.js';
+import { PomodoroManager } from './managers/PomodoroManager.js';
 import { QuoteService } from './services/QuoteService.js';
 
 export class WaifuApp {
@@ -27,6 +28,7 @@ export class WaifuApp {
     this.affectionManager = new AffectionManager(storageProvider, logger);
     this.todoManager = new TodoManager(storageProvider, logger);
     this.tooltipManager = new TooltipManager(logger);
+    this.pomodoroManager = new PomodoroManager(storageProvider, logger);
     
     // Quote timer for random quotes
     this.quoteTimer = null;
@@ -42,6 +44,22 @@ export class WaifuApp {
       document.getElementById('task-count')
     );
     
+    // Set up Pomodoro UI elements
+    this.pomodoroManager.setUIElements({
+      timerDisplay: document.getElementById('timer-time'),
+      sessionDisplay: document.getElementById('timer-session'),
+      progressBar: document.getElementById('timer-fill'),
+      startButton: document.getElementById('pomodoro-start'),
+      pauseButton: document.getElementById('pomodoro-pause'),
+      stopButton: document.getElementById('pomodoro-stop'),
+      resetButton: document.getElementById('pomodoro-reset'),
+      statsDisplay: {
+        workSessions: document.getElementById('work-sessions'),
+        totalSessions: document.getElementById('total-sessions'),
+        productiveTime: document.getElementById('productive-time')
+      }
+    });
+    
     this.setupEventHandlers();
   }
 
@@ -52,7 +70,8 @@ export class WaifuApp {
       // Load data
       await Promise.all([
         this.affectionManager.load(),
-        this.todoManager.load()
+        this.todoManager.load(),
+        this.pomodoroManager.load()
       ]);
       
       // Start waifu cycling
@@ -118,6 +137,15 @@ export class WaifuApp {
     this.todoManager.onDelete = (index) => {
       this.todoManager.delete(index);
       this.updateWaifuMood();
+    };
+    
+    // Set up Pomodoro event handlers
+    this.pomodoroManager.onSessionComplete = (state) => {
+      this.handlePomodoroSessionComplete(state);
+    };
+    
+    this.pomodoroManager.onStateChange = (action, state) => {
+      this.handlePomodoroStateChange(action, state);
     };
   }
 
@@ -257,12 +285,93 @@ export class WaifuApp {
     }
   }
 
+  // Pomodoro Integration Methods
+  handlePomodoroSessionComplete(state) {
+    // Award affection for completed sessions
+    if (state.completedSessionType === 'work') {
+      this.affectionManager.increase(
+        CONFIG.AFFECTION.POMODORO_WORK_SESSION,
+        document.getElementById('waifu-container')
+      );
+      this.showEventQuote('pomodoroWorkComplete');
+    } else {
+      this.affectionManager.increase(
+        CONFIG.AFFECTION.POMODORO_BREAK_SESSION,
+        document.getElementById('waifu-container')
+      );
+      this.showEventQuote('pomodoroBreakComplete');
+    }
+    
+    this.updateWaifuMood();
+    this.updatePomodoroUI(state);
+  }
+
+  handlePomodoroStateChange(action, state) {
+    // Handle different Pomodoro state changes
+    switch (action) {
+      case 'started':
+        if (state.currentSession === 'work') {
+          this.showEventQuote('pomodoroWorkStart');
+        } else if (state.currentSession === 'longBreak') {
+          this.showEventQuote('pomodoroLongBreakStart');
+        } else {
+          this.showEventQuote('pomodoroBreakStart');
+        }
+        break;
+      
+      case 'paused':
+        // Optionally show a pause quote
+        break;
+      
+      case 'stopped':
+      case 'reset':
+        // Update UI state
+        break;
+    }
+    
+    this.updatePomodoroUI(state);
+    this.updateWaifuMood();
+  }
+
+  updatePomodoroUI(state) {
+    const timerCircle = document.getElementById('timer-circle');
+    const timerFill = document.getElementById('timer-fill');
+    
+    if (timerCircle) {
+      // Remove existing timer state classes
+      timerCircle.classList.remove('timer-work', 'timer-break', 'timer-long-break', 'timer-running');
+      
+      // Add appropriate state classes
+      if (state.currentSession === 'work') {
+        timerCircle.classList.add('timer-work');
+      } else if (state.currentSession === 'longBreak') {
+        timerCircle.classList.add('timer-long-break');
+      } else {
+        timerCircle.classList.add('timer-break');
+      }
+      
+      if (state.isRunning) {
+        timerCircle.classList.add('timer-running');
+      }
+    }
+    
+    // Update progress bar
+    if (timerFill) {
+      const progressDegrees = state.progress * 360;
+      timerFill.style.setProperty('--progress', `${progressDegrees}deg`);
+    }
+  }
+
   destroy() {
     this.waifuManager.stopCycling();
     this.stopQuoteSystem();
     
     if (this.tooltipManager) {
       this.tooltipManager.destroy();
+    }
+    
+    if (this.pomodoroManager) {
+      this.pomodoroManager.destroy();
     }
     
     this.logger.log('Application destroyed');
