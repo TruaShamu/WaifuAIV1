@@ -12,6 +12,7 @@ import { PomodoroManager } from './managers/PomodoroManager.js';
 import { SettingsManager } from './managers/SettingsManager.js';
 import { UIManager } from './managers/UIManager.js';
 import { QuoteService } from './services/QuoteService.js';
+import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js';
 
 export class WaifuApp {
   constructor(storageProvider, logger) {
@@ -20,6 +21,7 @@ export class WaifuApp {
     
     // Initialize services
     this.quoteService = new QuoteService(logger);
+    this.contextAwareQuotes = new ContextAwareQuoteManager(logger, this.quoteService);
     
     // Initialize managers
     this.settingsManager = new SettingsManager(storageProvider, logger);
@@ -113,6 +115,9 @@ export class WaifuApp {
       
       // Check storage usage
       await this.checkStorageUsage();
+      
+      // Initialize context-aware quotes
+      await this.contextAwareQuotes.initialize();
       
       // Request notification permission for Pomodoro
       await this.pomodoroManager.requestNotificationPermission();
@@ -350,6 +355,22 @@ export class WaifuApp {
 
     this.logger.log(`Quote auto-enabled setting: ${settings.quoteAutoEnabled}`);
 
+    // Apply Privacy & Context settings
+    CONFIG.PRIVACY.TAB_SPY_ENABLED = settings.tabSpyEnabled;
+    CONFIG.PRIVACY.CONTEXT_AWARE_QUOTES = settings.contextAwareQuotes;
+    CONFIG.PRIVACY.PRODUCTIVITY_TRACKING = settings.productivityTracking;
+
+    // Update context-aware quotes based on settings
+    if (this.contextAwareQuotes) {
+      if (settings.tabSpyEnabled && settings.contextAwareQuotes) {
+        this.contextAwareQuotes.enable();
+        this.logger.log('Context-aware quotes enabled');
+      } else {
+        this.contextAwareQuotes.disable();
+        this.logger.log('Context-aware quotes disabled');
+      }
+    }
+
     // Apply Sprite settings
     CONFIG.SPRITE_CYCLE_INTERVAL = settings.spriteCycleInterval * 1000;
 
@@ -497,7 +518,15 @@ export class WaifuApp {
     }
 
     const moodLevel = this.getMoodBasedOnProgress();
-    const quote = this.quoteService.getRandomQuote(moodLevel);
+    
+    // Use context-aware quotes if available, fallback to regular quotes
+    let quote;
+    try {
+      quote = this.contextAwareQuotes.getContextualQuote();
+    } catch (error) {
+      this.logger.warn('Context-aware quotes failed, using fallback');
+      quote = this.quoteService.getRandomQuote(moodLevel);
+    }
     
     this.tooltipManager.show(
       quote,
@@ -520,14 +549,32 @@ export class WaifuApp {
     const taskProgress = this.todoManager.getProgress();
     const affectionLevel = this.affectionManager.getLevel();
     
-    // Determine mood based on tasks and affection
-    if (affectionLevel >= CONFIG.AFFECTION_LEVELS.VERY_HIGH && taskProgress.completed > taskProgress.total * 0.7) {
-      return 'happy';
-    } else if (affectionLevel <= CONFIG.AFFECTION_LEVELS.LOW || taskProgress.total > 10) {
-      return 'sad';
-    } else {
-      return 'neutral';
+    // Get context-aware mood multiplier
+    let moodMultiplier = 1.0;
+    try {
+      moodMultiplier = this.contextAwareQuotes.getMoodMultiplier();
+    } catch (error) {
+      // Context-aware quotes might not be initialized yet
     }
+    
+    // Base mood calculation
+    let baseMood = 'neutral';
+    if (affectionLevel >= CONFIG.AFFECTION_LEVELS.VERY_HIGH && taskProgress.completed > taskProgress.total * 0.7) {
+      baseMood = 'happy';
+    } else if (affectionLevel <= CONFIG.AFFECTION_LEVELS.LOW || taskProgress.total > 10) {
+      baseMood = 'sad';
+    }
+    
+    // Adjust mood based on browsing context
+    if (moodMultiplier >= 1.2) {
+      // User is being productive - boost mood
+      baseMood = baseMood === 'sad' ? 'neutral' : 'happy';
+    } else if (moodMultiplier <= 0.6) {
+      // User is on distracting sites - lower mood slightly
+      baseMood = baseMood === 'happy' ? 'neutral' : 'sad';
+    }
+    
+    return baseMood;
   }
 
   // Pomodoro Integration Methods

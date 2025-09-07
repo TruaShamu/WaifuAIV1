@@ -44,7 +44,18 @@ export class SettingsTemplate {
         settings: [
           { type: 'number', id: 'quote-interval', label: 'Random Quote Interval (seconds):', min: 5, max: 300, step: 5 },
           { type: 'number', id: 'quote-duration', label: 'Quote Display Duration (seconds):', min: 1, max: 30, step: 1 },
-          { type: 'checkbox', id: 'quotes-auto', label: 'Enable Auto Quotes' }
+          { type: 'checkbox', id: 'quotes-auto', label: 'Enable Auto Quotes' },
+          { type: 'checkbox', id: 'context-aware-quotes', label: 'Smart Context-Aware Quotes' }
+        ]
+      },
+      {
+        id: 'privacy',
+        title: '🕵️ Privacy & Context',
+        settings: [
+          { type: 'checkbox', id: 'tab-spy-enabled', label: 'Enable Tab Awareness (for context quotes)' },
+          { type: 'info', text: 'Tab awareness helps provide smarter quotes based on your activity. Only site categories are tracked, not specific content.' },
+          { type: 'checkbox', id: 'productivity-tracking', label: 'Track Productivity Patterns' },
+          { type: 'info', text: 'Tracks time spent on productive vs distracting sites for insights.' }
         ]
       },
       {
@@ -124,6 +135,8 @@ export class SettingsTemplate {
         return this.generateSelectInput(setting);
       case 'text':
         return this.generateTextInput(setting);
+      case 'info':
+        return this.generateInfoText(setting);
       default:
         console.warn(`Unknown setting type: ${setting.type}`);
         return '';
@@ -171,6 +184,14 @@ export class SettingsTemplate {
         <label for="${setting.id}">${setting.label}</label>
         <input type="text" id="${setting.id}" 
                ${setting.placeholder ? `placeholder="${setting.placeholder}"` : ''}>
+      </div>
+    `;
+  }
+
+  generateInfoText(setting) {
+    return `
+      <div class="setting-info">
+        <p class="info-text">ℹ️ ${setting.text}</p>
       </div>
     `;
   }

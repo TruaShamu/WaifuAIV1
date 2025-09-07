@@ -32,6 +32,11 @@ export class SettingsManager {
       quoteDisplayDuration: CONFIG.TOOLTIP.DISPLAY_DURATION / 1000,
       quoteEventDuration: CONFIG.TOOLTIP.EVENT_DURATION / 1000,
       quoteAutoEnabled: CONFIG.TOOLTIP.AUTO_ENABLED,
+      contextAwareQuotes: CONFIG.PRIVACY.CONTEXT_AWARE_QUOTES,
+      
+      // Privacy & Context Settings
+      tabSpyEnabled: CONFIG.PRIVACY.TAB_SPY_ENABLED,
+      productivityTracking: CONFIG.PRIVACY.PRODUCTIVITY_TRACKING,
       
       // Sprite Settings
       spriteCycleInterval: CONFIG.SPRITE_CYCLE_INTERVAL / 1000, // Convert to seconds for UI

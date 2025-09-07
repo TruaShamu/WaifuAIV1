@@ -74,6 +74,7 @@ export class UIManager {
         ${this.buildPomodoroSection()}
         ${this.buildAffectionSection()}
         ${this.buildQuotesSection()}
+        ${this.buildPrivacySection()}
         ${this.buildAppearanceSection()}
         ${this.buildFeatureFlagsSection()}
         ${this.buildManagementSection()}
@@ -126,6 +127,23 @@ export class UIManager {
         ${this.createNumberInput('quote-interval', 'Random Quote Interval (seconds):', 5, 300, 5)}
         ${this.createNumberInput('quote-duration', 'Quote Display Duration (seconds):', 1, 30, 1)}
         ${this.createCheckboxInput('quotes-auto', 'Enable Auto Quotes')}
+        ${this.createCheckboxInput('context-aware-quotes', 'Smart Context-Aware Quotes')}
+      </div>
+    `;
+  }
+
+  buildPrivacySection() {
+    return `
+      <div class="settings-section">
+        <h3>🕵️ Privacy & Context</h3>
+        ${this.createCheckboxInput('tab-spy-enabled', 'Enable Tab Awareness (for context quotes)')}
+        <div class="setting-info">
+          <p class="info-text">ℹ️ Tab awareness helps provide smarter quotes based on your activity. Only site categories are tracked, not specific content.</p>
+        </div>
+        ${this.createCheckboxInput('productivity-tracking', 'Track Productivity Patterns')}
+        <div class="setting-info">
+          <p class="info-text">ℹ️ Tracks time spent on productive vs distracting sites for insights.</p>
+        </div>
       </div>
     `;
   }
@@ -276,6 +294,20 @@ export class UIManager {
     if (quotesAutoCheckbox) {
       quotesAutoCheckbox.checked = settings.quoteAutoEnabled;
     }
+    const contextAwareCheckbox = document.getElementById('context-aware-quotes');
+    if (contextAwareCheckbox) {
+      contextAwareCheckbox.checked = settings.contextAwareQuotes;
+    }
+
+    // Privacy & Context settings
+    const tabSpyCheckbox = document.getElementById('tab-spy-enabled');
+    if (tabSpyCheckbox) {
+      tabSpyCheckbox.checked = settings.tabSpyEnabled;
+    }
+    const productivityTrackingCheckbox = document.getElementById('productivity-tracking');
+    if (productivityTrackingCheckbox) {
+      productivityTrackingCheckbox.checked = settings.productivityTracking;
+    }
 
     // Appearance settings
     document.getElementById('sprite-cycle').value = settings.spriteCycleInterval;
@@ -310,6 +342,11 @@ export class UIManager {
       quoteRandomInterval: parseInt(document.getElementById('quote-interval').value),
       quoteDisplayDuration: parseInt(document.getElementById('quote-duration').value),
       quoteAutoEnabled: document.getElementById('quotes-auto')?.checked || false,
+      contextAwareQuotes: document.getElementById('context-aware-quotes')?.checked || false,
+
+      // Privacy & Context settings
+      tabSpyEnabled: document.getElementById('tab-spy-enabled')?.checked || false,
+      productivityTracking: document.getElementById('productivity-tracking')?.checked || false,
 
       // Appearance settings
       spriteCycleInterval: parseInt(document.getElementById('sprite-cycle').value),

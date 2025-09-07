@@ -32,6 +32,11 @@ export const CONFIG = {
     EVENT_DURATION: 3000,   // 3 seconds for event-triggered quotes
     AUTO_ENABLED: true
   },
+  PRIVACY: {
+    TAB_SPY_ENABLED: true,
+    CONTEXT_AWARE_QUOTES: true,
+    PRODUCTIVITY_TRACKING: true
+  },
   POMODORO: {
     WORK_DURATION: 3,      // minutes
     SHORT_BREAK: 1,         // minutes

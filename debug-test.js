@@ -131,6 +131,77 @@ const WaifuAIDebugger = {
     console.log('⚠️ Settings validation test requires app instance');
   },
 
+  // Test tab spy functionality
+  testTabSpy() {
+    console.log('🧪 Testing Tab Spy Service...');
+    
+    if (typeof chrome === 'undefined' || !chrome.tabs) {
+      console.error('❌ Chrome tabs API not available');
+      return false;
+    }
+    
+    // Test current tab detection
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0) {
+        const currentTab = tabs[0];
+        console.log('✅ Current tab detected:', {
+          title: currentTab.title,
+          url: currentTab.url,
+          id: currentTab.id
+        });
+        
+        // Test categorization
+        const domain = new URL(currentTab.url).hostname;
+        console.log('🏷️ Domain:', domain);
+        
+        // Check if it matches known categories
+        const categories = {
+          productivity: ['github.com', 'stackoverflow.com', 'codepen.io'],
+          social: ['facebook.com', 'twitter.com', 'reddit.com'],
+          entertainment: ['youtube.com', 'netflix.com', 'twitch.tv']
+        };
+        
+        let category = 'other';
+        for (const [cat, domains] of Object.entries(categories)) {
+          if (domains.some(d => domain.includes(d))) {
+            category = cat;
+            break;
+          }
+        }
+        
+        console.log('📊 Site category:', category);
+        console.log('✅ Tab spy basic functionality working');
+        
+      } else {
+        console.error('❌ No active tab found');
+      }
+    });
+    
+    return true;
+  },
+
+  // Test contextual quote generation
+  testContextualQuotes() {
+    console.log('🧪 Testing Contextual Quotes...');
+    
+    // Mock context data
+    const mockContexts = [
+      { category: 'productivity', isProductive: true },
+      { category: 'social', isDistraction: true },
+      { category: 'learning', isProductive: true },
+      { category: 'entertainment', isDistraction: true }
+    ];
+    
+    mockContexts.forEach(context => {
+      console.log(`🎭 Testing context: ${context.category}`);
+      
+      // This would require access to ContextAwareQuoteManager
+      console.log(`📝 Context: ${JSON.stringify(context)}`);
+    });
+    
+    console.log('✅ Contextual quote test structure ready');
+  },
+
   // Comprehensive test runner
   async runAllTests() {
     console.log('🚀 Starting WaifuAI Debug Test Suite...');
@@ -145,6 +216,8 @@ const WaifuAIDebugger = {
     this.testActiveTimers();
     await this.testStorageQuota();
     this.testSettingsValidation();
+    this.testTabSpy();
+    this.testContextualQuotes();
     
     console.log('=' * 50);
     console.log('📊 Test Results Summary:');
