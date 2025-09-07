@@ -41,6 +41,9 @@ export class SettingsManager {
       // Sprite Settings
       spriteCycleInterval: CONFIG.SPRITE_CYCLE_INTERVAL / 1000, // Convert to seconds for UI
       
+      // AI Integration Settings
+      customInstructions: '',
+      
       // Feature Flags
       enableExperimentalFeatures: false,
       enableDebugMode: false,

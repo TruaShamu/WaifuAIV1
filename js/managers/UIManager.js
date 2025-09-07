@@ -89,6 +89,7 @@ export class UIManager {
         ${this.buildAffectionSection()}
         ${this.buildQuotesSection()}
         ${this.buildPrivacySection()}
+        ${this.buildAISection()}
         ${this.buildAppearanceSection()}
         ${this.buildFeatureFlagsSection()}
         ${this.buildManagementSection()}
@@ -162,6 +163,18 @@ export class UIManager {
     `;
   }
 
+  buildAISection() {
+    return `
+      <div class="settings-section">
+        <h3>🤖 AI Integration</h3>
+        ${this.createTextareaInput('custom-instructions', 'Custom Instructions:', 'Enter custom instructions for future AI features...', 6)}
+        <div class="setting-info">
+          <p class="info-text">ℹ️ These instructions will be used for future LLM integration features. You can set your preferences, personality traits, or specific behaviors you want the AI to follow.</p>
+        </div>
+      </div>
+    `;
+  }
+
   buildAppearanceSection() {
     return `
       <div class="settings-section">
@@ -202,6 +215,15 @@ export class UIManager {
           <input type="checkbox" id="${id}">
           ${label}
         </label>
+      </div>
+    `;
+  }
+
+  createTextareaInput(id, label, placeholder = '', rows = 4) {
+    return `
+      <div class="setting-item textarea-item">
+        <label for="${id}">${label}</label>
+        <textarea id="${id}" rows="${rows}" placeholder="${placeholder}" class="form-textarea"></textarea>
       </div>
     `;
   }
@@ -326,6 +348,12 @@ export class UIManager {
     // Appearance settings
     document.getElementById('sprite-cycle').value = settings.spriteCycleInterval;
 
+    // AI Integration settings
+    const customInstructionsTextarea = document.getElementById('custom-instructions');
+    if (customInstructionsTextarea) {
+      customInstructionsTextarea.value = settings.customInstructions || '';
+    }
+
     // Feature flags
     document.getElementById('experimental-features').checked = settings.enableExperimentalFeatures;
     document.getElementById('debug-mode').checked = settings.enableDebugMode;
@@ -364,6 +392,9 @@ export class UIManager {
 
       // Appearance settings
       spriteCycleInterval: parseInt(document.getElementById('sprite-cycle').value),
+
+      // AI Integration settings
+      customInstructions: document.getElementById('custom-instructions')?.value || '',
 
       // Feature flags
       enableExperimentalFeatures: document.getElementById('experimental-features').checked,

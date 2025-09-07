@@ -91,12 +91,13 @@
 
 /* Kawaii sparkle effect ✨ */
 .tooltip-content::before {
-  content: '✨';
+  content: '\2728'; /* Unicode for sparkle emoji */
   position: absolute;
   top: -5px;
   right: -5px;
   font-size: 12px;
   animation: sparkle 2s ease-in-out infinite;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
 }
 
 @keyframes sparkle {
