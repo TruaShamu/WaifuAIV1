@@ -83,13 +83,21 @@ export class ManagerFactory {
   }
 
   /**
+   * Get logger with fallback to console
+   * @returns {Object} Logger instance
+   */
+  getLogger() {
+    return this.container.has('logger') ? this.container.get('logger') : console;
+  }
+
+  /**
    * Initialize all managers in the correct order
    * @returns {Promise<Object>} Object containing all manager instances
    */
   async initializeAll() {
     const instances = {};
     
-    this.container.get('logger').log('Starting manager initialization...');
+    this.getLogger().log('Starting manager initialization...');
 
     // Create all instances first
     for (const name of this.initializationOrder) {
@@ -122,7 +130,7 @@ export class ManagerFactory {
       }
     }
 
-    this.container.get('logger').log('All managers initialized successfully');
+    this.getLogger().log('All managers initialized successfully');
     return instances;
   }
 
@@ -139,7 +147,7 @@ export class ManagerFactory {
         try {
           await instances[name].destroy();
         } catch (error) {
-          this.container.get('logger').error(`Failed to destroy ${name}: ${error.message}`);
+          this.getLogger().error(`Failed to destroy ${name}: ${error.message}`);
         }
       }
     }

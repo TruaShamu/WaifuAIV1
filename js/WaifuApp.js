@@ -27,6 +27,10 @@ import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js
 
 export class WaifuApp {
   constructor(storageProvider, logger) {
+    // Store references for direct access
+    this.logger = logger;
+    this.storageProvider = storageProvider;
+    
     // Create service container and register core services
     this.container = new ServiceContainer();
     this.setupServices(storageProvider, logger);
