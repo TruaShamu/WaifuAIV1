@@ -1,5 +1,10 @@
 # 🌸 Waifu AI - Productivity Companion Chrome Extension
+<img width="492" height="973" alt="image" src="https://github.com/user-attachments/assets/e981a884-b2e0-49e3-8196-4ae80fbf8b28" />
 
+<img width="499" height="978" alt="image" src="https://github.com/user-attachments/assets/18042825-bd3e-48a0-8d0d-1f2445e21301" />
+
+
+(The below documentation is AI-generated, and may not reflect the up to date browser extension feature set or design)
 > A delightful Chrome extension featuring an animated waifu companion with integrated productivity tools including todo management, Pomodoro timer, affection system, and kawaii quote system.
 
 [![Version](https://img.shields.io/badge/version-0.6-pink.svg)](./docs/CHANGELOG.md)
