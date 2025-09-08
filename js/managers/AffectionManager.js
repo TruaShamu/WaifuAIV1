@@ -103,4 +103,34 @@ export class AffectionManager {
     this.updateUI();
     this.logger.log(`Synced affection level: ${this.affection.level}`);
   }
+
+  /**
+   * Calculate overall mood based on task progress, affection level, and browsing context
+   * @param {Object} taskProgress - Progress object from TodoManager
+   * @param {number} moodMultiplier - Context-aware mood multiplier (default: 1.0)
+   * @param {Object} config - Configuration object with affection levels
+   * @returns {string} Overall mood: 'happy', 'neutral', or 'sad'
+   */
+  getOverallMood(taskProgress, moodMultiplier = 1.0, config) {
+    const affectionLevel = this.affection.level;
+    
+    // Base mood calculation
+    let baseMood = 'neutral';
+    if (affectionLevel >= config.AFFECTION_LEVELS.VERY_HIGH && taskProgress.completed > taskProgress.total * 0.7) {
+      baseMood = 'happy';
+    } else if (affectionLevel <= config.AFFECTION_LEVELS.LOW || taskProgress.total > 10) {
+      baseMood = 'sad';
+    }
+    
+    // Adjust mood based on browsing context
+    if (moodMultiplier >= 1.2) {
+      // User is being productive - boost mood
+      baseMood = baseMood === 'sad' ? 'neutral' : 'happy';
+    } else if (moodMultiplier <= 0.6) {
+      // User is on distracting sites - lower mood slightly
+      baseMood = baseMood === 'happy' ? 'neutral' : 'sad';
+    }
+    
+    return baseMood;
+  }
 }

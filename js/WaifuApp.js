@@ -564,7 +564,16 @@ export class WaifuApp {
       return;
     }
 
-    const moodLevel = this.getMoodBasedOnProgress();
+    // Get context-aware mood multiplier
+    let moodMultiplier = 1.0;
+    try {
+      moodMultiplier = this.contextAwareQuotes.getMoodMultiplier();
+    } catch (error) {
+      // Context-aware quotes might not be initialized yet
+    }
+    
+    const taskProgress = this.todoManager.getProgress();
+    const moodLevel = this.affectionManager.getOverallMood(taskProgress, moodMultiplier, CONFIG);
     
     // Use context-aware quotes if available, fallback to regular quotes
     let quote;
@@ -590,38 +599,6 @@ export class WaifuApp {
       CONFIG.TOOLTIP.EVENT_DURATION,
       document.getElementById('waifu-container')
     );
-  }
-
-  getMoodBasedOnProgress() {
-    const taskProgress = this.todoManager.getProgress();
-    const affectionLevel = this.affectionManager.getLevel();
-    
-    // Get context-aware mood multiplier
-    let moodMultiplier = 1.0;
-    try {
-      moodMultiplier = this.contextAwareQuotes.getMoodMultiplier();
-    } catch (error) {
-      // Context-aware quotes might not be initialized yet
-    }
-    
-    // Base mood calculation
-    let baseMood = 'neutral';
-    if (affectionLevel >= CONFIG.AFFECTION_LEVELS.VERY_HIGH && taskProgress.completed > taskProgress.total * 0.7) {
-      baseMood = 'happy';
-    } else if (affectionLevel <= CONFIG.AFFECTION_LEVELS.LOW || taskProgress.total > 10) {
-      baseMood = 'sad';
-    }
-    
-    // Adjust mood based on browsing context
-    if (moodMultiplier >= 1.2) {
-      // User is being productive - boost mood
-      baseMood = baseMood === 'sad' ? 'neutral' : 'happy';
-    } else if (moodMultiplier <= 0.6) {
-      // User is on distracting sites - lower mood slightly
-      baseMood = baseMood === 'happy' ? 'neutral' : 'sad';
-    }
-    
-    return baseMood;
   }
 
   // Pomodoro Integration Methods
