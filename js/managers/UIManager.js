@@ -5,6 +5,7 @@
 
 import { IconMapper } from '../services/IconMapper.js';
 import { SettingsTemplate } from '../services/SettingsTemplate.js';
+import { DataValidationService } from '../services/DataValidationService.js';
 
 export class UIManager {
   constructor(logger) {
@@ -368,25 +369,26 @@ export class UIManager {
   }
 
   getSettingsFromUI() {
-    return {
+    // Raw form values
+    const rawSettings = {
       // Pomodoro settings
-      pomodoroWorkDuration: parseInt(document.getElementById('work-duration').value),
-      pomodoroShortBreak: parseInt(document.getElementById('short-break').value),
-      pomodoroLongBreak: parseInt(document.getElementById('long-break').value),
-      pomodoroSessionsUntilLongBreak: parseInt(document.getElementById('sessions-until-long').value),
-      pomodoroNotificationsEnabled: document.getElementById('notifications-enabled').checked,
-      pomodoroAutoStartBreaks: document.getElementById('auto-start-breaks').checked,
-      pomodoroAutoStartWork: document.getElementById('auto-start-work').checked,
+      pomodoroWorkDuration: document.getElementById('work-duration')?.value,
+      pomodoroShortBreak: document.getElementById('short-break')?.value,
+      pomodoroLongBreak: document.getElementById('long-break')?.value,
+      pomodoroSessionsUntilLongBreak: document.getElementById('sessions-until-long')?.value,
+      pomodoroNotificationsEnabled: document.getElementById('notifications-enabled')?.checked,
+      pomodoroAutoStartBreaks: document.getElementById('auto-start-breaks')?.checked,
+      pomodoroAutoStartWork: document.getElementById('auto-start-work')?.checked,
 
       // Affection settings
-      affectionTaskCompletion: parseInt(document.getElementById('affection-task').value),
-      affectionWaifuClick: parseInt(document.getElementById('affection-click').value),
-      affectionPomodoroWork: parseInt(document.getElementById('affection-work').value),
-      affectionPomodoroBreak: parseInt(document.getElementById('affection-break').value),
+      affectionTaskCompletion: document.getElementById('affection-task')?.value,
+      affectionWaifuClick: document.getElementById('affection-click')?.value,
+      affectionPomodoroWork: document.getElementById('affection-work')?.value,
+      affectionPomodoroBreak: document.getElementById('affection-break')?.value,
 
       // Quote settings
-      quoteRandomInterval: parseInt(document.getElementById('quote-interval').value),
-      quoteDisplayDuration: parseInt(document.getElementById('quote-duration').value),
+      quoteRandomInterval: document.getElementById('quote-interval')?.value,
+      quoteDisplayDuration: document.getElementById('quote-duration')?.value,
       quoteAutoEnabled: document.getElementById('quotes-auto')?.checked || false,
       contextAwareQuotes: document.getElementById('context-aware-quotes')?.checked || false,
 
@@ -395,20 +397,28 @@ export class UIManager {
       productivityTracking: document.getElementById('productivity-tracking')?.checked || false,
 
       // Appearance settings
-      spriteCycleInterval: parseInt(document.getElementById('sprite-cycle').value),
+      spriteCycleInterval: document.getElementById('sprite-cycle')?.value,
 
       // AI Integration settings
       customInstructions: document.getElementById('custom-instructions')?.value || '',
-      aiDialoguePercentage: parseInt(document.getElementById('ai-dialogue-percentage')?.value || 0),
-      aiDialoguePercentage: parseInt(document.getElementById('ai-dialogue-percentage')?.value || 0),
+      aiDialoguePercentage: document.getElementById('ai-dialogue-percentage')?.value || 0,
 
       // Feature flags
-      enableExperimentalFeatures: document.getElementById('experimental-features').checked,
-      enableDebugMode: document.getElementById('debug-mode').checked,
-      enableSoundEffects: document.getElementById('sound-effects').checked,
-      enableVoiceQuotes: document.getElementById('voice-quotes').checked,
-      enableCustomThemes: document.getElementById('custom-themes').checked,
-      enableAdvancedStats: document.getElementById('advanced-stats').checked
+      enableExperimentalFeatures: document.getElementById('experimental-features')?.checked,
+      enableDebugMode: document.getElementById('debug-mode')?.checked,
+      enableSoundEffects: document.getElementById('sound-effects')?.checked,
+      enableVoiceQuotes: document.getElementById('voice-quotes')?.checked,
+      enableCustomThemes: document.getElementById('custom-themes')?.checked,
+      enableAdvancedStats: document.getElementById('advanced-stats')?.checked
     };
+
+    // Validate and sanitize settings using DataValidationService
+    const validationResult = DataValidationService.validateSettings(rawSettings);
+    
+    if (!validationResult.isValid) {
+      this.logger.warn('Some form values failed validation:', validationResult.errors);
+    }
+    
+    return validationResult.validated;
   }
 }

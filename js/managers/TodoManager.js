@@ -67,11 +67,18 @@ export class TodoManager {
   }
 
   add(text) {
-    if (!text || typeof text !== 'string' || !text.trim()) {
+    const validation = DataValidationService.validateText(text, { 
+      minLength: 1, 
+      maxLength: 200,
+      required: true 
+    });
+    
+    if (!validation.isValid) {
+      this.logger.warn(`Todo validation failed: ${validation.error}`);
       return false;
     }
 
-    const todo = new Todo(text.trim());
+    const todo = new Todo(validation.value);
     this.todos.push(todo);
     this.save();
     this.updateUI();

@@ -4,6 +4,7 @@
  */
 
 import { TabSpyService } from './TabSpyService.js';
+import { DataValidationService } from './DataValidationService.js';
 import { 
   CONTEXT_AWARE_CONFIG, 
   validateConfig, 
@@ -106,7 +107,8 @@ export class ContextAwareQuoteManager {
       return this.config.FALLBACK_QUOTES.motivational;
     }
     
-    return this.addContextFlavor(quotes[Math.floor(Math.random() * quotes.length)], context);
+    const selectedQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    return this.addContextFlavor(selectedQuote, context);
   }
 
   /**
@@ -120,7 +122,8 @@ export class ContextAwareQuoteManager {
       return this.config.FALLBACK_QUOTES.encouragement;
     }
     
-    return this.addContextFlavor(quotes[Math.floor(Math.random() * quotes.length)], context);
+    const selectedQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    return this.addContextFlavor(selectedQuote, context);
   }
 
   /**
@@ -177,16 +180,25 @@ export class ContextAwareQuoteManager {
    * Add context-specific flavor to quotes
    */
   addContextFlavor(quote, context) {
-    if (!context) return quote;
+    const validation = DataValidationService.validateText(quote, { required: true });
+    
+    if (!validation.isValid) {
+      this.logger.error('addContextFlavor called with invalid quote:', validation.error);
+      return this.config.FALLBACK_QUOTES.motivational || 'Stay focused! You can do this!';
+    }
+    
+    const validatedQuote = validation.value;
+    
+    if (!context) return validatedQuote;
     
     const flavor = this.config.CONTEXT_FLAVORS[context.category];
     if (flavor) {
       const prefix = flavor.prefix[Math.floor(Math.random() * flavor.prefix.length)];
       const suffix = flavor.suffix[Math.floor(Math.random() * flavor.suffix.length)];
-      return prefix + quote + suffix;
+      return prefix + validatedQuote + suffix;
     }
     
-    return quote;
+    return validatedQuote;
   }
 
   /**
@@ -328,11 +340,11 @@ export class ContextAwareQuoteManager {
   }
 
   /**
-   * Add custom context flavor
+   * Add custom context flavor configuration
    * @param {string} category - Context category
    * @param {Object} flavor - Flavor object with prefix and suffix arrays
    */
-  addContextFlavor(category, flavor) {
+  addCustomContextFlavor(category, flavor) {
     if (!this.config.CONTEXT_FLAVORS[category]) {
       this.config.CONTEXT_FLAVORS[category] = flavor;
       this.logger.log(`🧠 Added context flavor for category: ${category}`);

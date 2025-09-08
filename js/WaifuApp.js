@@ -4,6 +4,7 @@
  */
 
 import { CONFIG } from './config.js';
+import { DataValidationService } from './services/DataValidationService.js';
 import { WaifuSpriteManager } from './managers/WaifuSpriteManager.js';
 import { AffectionManager } from './managers/AffectionManager.js';
 import { TodoManager } from './managers/TodoManager.js';
@@ -460,27 +461,13 @@ export class WaifuApp {
   }
 
   validateSettings(settings) {
-    // Validate numeric settings are within reasonable bounds
-    const validations = [
-      { key: 'pomodoroWorkDuration', min: 1, max: 120 },
-      { key: 'pomodoroShortBreak', min: 1, max: 30 },
-      { key: 'pomodoroLongBreak', min: 1, max: 60 },
-      { key: 'pomodoroSessionsUntilLongBreak', min: 2, max: 10 },
-      { key: 'affectionTaskCompletion', min: 1, max: 100 },
-      { key: 'affectionWaifuClick', min: 1, max: 50 },
-      { key: 'quoteRandomInterval', min: 5, max: 300 },
-      { key: 'quoteDisplayDuration', min: 1, max: 30 },
-      { key: 'spriteCycleInterval', min: 1, max: 60 }
-    ];
-
-    for (const validation of validations) {
-      const value = settings[validation.key];
-      if (value < validation.min || value > validation.max) {
-        this.logger.error(`${validation.key} must be between ${validation.min} and ${validation.max}`);
-        return false;
-      }
+    const result = DataValidationService.validateSettings(settings);
+    
+    if (!result.isValid) {
+      this.logger.error('Settings validation failed:', result.errors);
+      return false;
     }
-
+    
     return true;
   }
 

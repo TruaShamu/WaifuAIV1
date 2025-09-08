@@ -356,7 +356,10 @@ export class PomodoroManager {
   }
 
   showNotification(state) {
-    if (!this.notificationsEnabled) return;
+    if (!this.notificationsEnabled) {
+      this.logger.log('Notifications disabled in settings');
+      return;
+    }
     
     const messages = {
       work: {
@@ -378,12 +381,48 @@ export class PomodoroManager {
 
     const notification = messages[state.completedSessionType] || messages.work;
     
+    // Debug logging
+    this.logger.log(`Attempting to show notification - Enabled: ${this.notificationsEnabled}`);
+    this.logger.log(`Notification API available: ${typeof Notification !== 'undefined'}`);
+    this.logger.log(`Notification permission: ${Notification?.permission}`);
+    
     // Browser notification (if permissions granted)
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      new Notification(notification.title, {
-        body: notification.message,
-        icon: 'assets/saber_happy.png' // Use happy waifu for notifications
-      });
+      try {
+        const iconUrl = chrome?.runtime?.getURL ? chrome.runtime.getURL('assets/saber_happy.png') : 'assets/saber_happy.png';
+        
+        const browserNotification = new Notification(notification.title, {
+          body: notification.message,
+          icon: iconUrl,
+          tag: 'pomodoro-completion', // Prevent duplicate notifications
+          requireInteraction: false // Don't require user interaction to dismiss
+        });
+        
+        // Add event listeners for debugging
+        browserNotification.onshow = () => {
+          this.logger.log('✅ Browser notification successfully displayed');
+        };
+        
+        browserNotification.onerror = (error) => {
+          this.logger.error('❌ Browser notification error:', error);
+        };
+        
+        browserNotification.onclick = () => {
+          this.logger.log('🖱️ Notification clicked');
+          browserNotification.close();
+        };
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+          browserNotification.close();
+        }, 5000);
+        
+        this.logger.log(`🔔 Browser notification created: ${notification.title}`);
+      } catch (error) {
+        this.logger.error('❌ Failed to display browser notification:', error);
+      }
+    } else {
+      this.logger.warn(`⚠️ Notification not displayed - Permission: ${Notification?.permission || 'undefined'}, API: ${typeof Notification}`);
     }
     
     this.logger.log(`Notification: ${notification.title} - ${notification.message}`);

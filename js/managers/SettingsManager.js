@@ -4,6 +4,7 @@
  */
 
 import { CONFIG } from '../config.js';
+import { DataValidationService } from '../services/DataValidationService.js';
 
 export class SettingsManager {
   constructor(storageProvider, logger) {
@@ -150,36 +151,13 @@ export class SettingsManager {
   }
 
   validateSettings(settings) {
-    const validated = {};
+    const result = DataValidationService.validateSettings(settings);
     
-    // Validate numeric settings
-    const numericSettings = [
-      'pomodoroWorkDuration', 'pomodoroShortBreak', 'pomodoroLongBreak',
-      'pomodoroSessionsUntilLongBreak', 'affectionTaskCompletion', 'affectionWaifuClick',
-      'affectionPomodoroWork', 'affectionPomodoroBreak', 'quoteRandomInterval',
-      'quoteDisplayDuration', 'quoteEventDuration', 'spriteCycleInterval'
-    ];
+    if (!result.isValid) {
+      this.logger.warn('Some settings failed validation:', result.errors);
+    }
     
-    numericSettings.forEach(key => {
-      if (settings[key] !== undefined && typeof settings[key] === 'number' && settings[key] > 0) {
-        validated[key] = settings[key];
-      }
-    });
-    
-    // Validate boolean settings
-    const booleanSettings = [
-      'pomodoroNotificationsEnabled', 'pomodoroAutoStartBreaks', 'pomodoroAutoStartWork',
-      'quoteAutoEnabled', 'enableExperimentalFeatures', 'enableDebugMode',
-      'enableSoundEffects', 'enableVoiceQuotes', 'enableCustomThemes', 'enableAdvancedStats'
-    ];
-    
-    booleanSettings.forEach(key => {
-      if (settings[key] !== undefined && typeof settings[key] === 'boolean') {
-        validated[key] = settings[key];
-      }
-    });
-    
-    return validated;
+    return result.validated;
   }
 
   // Helper methods for getting converted values

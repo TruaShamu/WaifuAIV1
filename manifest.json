@@ -15,7 +15,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["site-categories.json"],
+      "resources": ["site-categories.json", "waifu_dialogue_collection.json", "assets/*.png"],
       "matches": ["<all_urls>"]
     }
   ]

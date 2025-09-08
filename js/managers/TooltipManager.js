@@ -4,6 +4,7 @@
  */
 
 import { AnimationService } from '../services/AnimationService.js';
+import { DataValidationService } from '../services/DataValidationService.js';
 
 export class TooltipManager {
   constructor(logger) {
@@ -54,6 +55,19 @@ export class TooltipManager {
       this.createTooltipElement();
     }
 
+    // Validate text parameter
+    const validation = DataValidationService.validateText(text, { 
+      required: true,
+      maxLength: 500 
+    });
+    
+    if (!validation.isValid) {
+      this.logger.error('TooltipManager.show() called with invalid text:', validation.error);
+      return;
+    }
+
+    const validatedText = validation.value;
+
     // Clear any existing hide timeout
     if (this.hideTimeout) {
       clearTimeout(this.hideTimeout);
@@ -62,8 +76,8 @@ export class TooltipManager {
 
     // Update text
     const textElement = this.tooltip.querySelector('.tooltip-text');
-    textElement.textContent = text;
-    this.currentQuote = text;
+    textElement.textContent = validatedText;
+    this.currentQuote = validatedText;
 
     // Position tooltip
     this.positionTooltip(targetElement);
@@ -76,7 +90,7 @@ export class TooltipManager {
     // Add floating animation
     AnimationService.addFloatingAnimation(this.tooltip);
 
-    this.logger.log(`Showing tooltip: ${text.substring(0, 30)}...`);
+    this.logger.log(`Showing tooltip: ${validatedText.substring(0, 30)}...`);
 
     // Auto-hide after duration
     this.hideTimeout = setTimeout(() => {
