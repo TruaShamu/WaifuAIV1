@@ -11,49 +11,8 @@ export class SettingsManager {
     this.storageProvider = storageProvider;
     this.logger = logger;
     
-    // Default settings (can be overridden by user)
-    this.settings = {
-      // Pomodoro Settings
-      pomodoroWorkDuration: CONFIG.POMODORO.WORK_DURATION,
-      pomodoroShortBreak: CONFIG.POMODORO.SHORT_BREAK,
-      pomodoroLongBreak: CONFIG.POMODORO.LONG_BREAK,
-      pomodoroSessionsUntilLongBreak: CONFIG.POMODORO.SESSIONS_UNTIL_LONG_BREAK,
-      pomodoroNotificationsEnabled: CONFIG.POMODORO.NOTIFICATIONS_ENABLED,
-      pomodoroAutoStartBreaks: CONFIG.POMODORO.AUTO_START_BREAKS,
-      pomodoroAutoStartWork: CONFIG.POMODORO.AUTO_START_WORK,
-      
-      // Affection Settings
-      affectionTaskCompletion: CONFIG.AFFECTION.TASK_COMPLETION,
-      affectionWaifuClick: CONFIG.AFFECTION.WAIFU_CLICK,
-      affectionPomodoroWork: CONFIG.AFFECTION.POMODORO_WORK_SESSION,
-      affectionPomodoroBreak: CONFIG.AFFECTION.POMODORO_BREAK_SESSION,
-      
-      // Quote Settings
-      quoteRandomInterval: CONFIG.TOOLTIP.RANDOM_INTERVAL / 1000, // Convert to seconds for UI
-      quoteDisplayDuration: CONFIG.TOOLTIP.DISPLAY_DURATION / 1000,
-      quoteEventDuration: CONFIG.TOOLTIP.EVENT_DURATION / 1000,
-      quoteAutoEnabled: CONFIG.TOOLTIP.AUTO_ENABLED,
-      contextAwareQuotes: CONFIG.PRIVACY.CONTEXT_AWARE_QUOTES,
-      
-      // Privacy & Context Settings
-      tabSpyEnabled: CONFIG.PRIVACY.TAB_SPY_ENABLED,
-      productivityTracking: CONFIG.PRIVACY.PRODUCTIVITY_TRACKING,
-      
-      // Sprite Settings
-      spriteCycleInterval: CONFIG.SPRITE_CYCLE_INTERVAL / 1000, // Convert to seconds for UI
-      
-      // AI Integration Settings
-      customInstructions: '',
-      aiDialoguePercentage: 0, // 0-100% AI vs static dialogue
-      
-      // Feature Flags
-      enableExperimentalFeatures: false,
-      enableDebugMode: false,
-      enableSoundEffects: false,
-      enableVoiceQuotes: false,
-      enableCustomThemes: false,
-      enableAdvancedStats: false
-    };
+    // Initialize with default settings
+    this.settings = SettingsManager.getDefaultSettings();
     
     // UI elements
     this.settingsPanel = null;
@@ -101,32 +60,7 @@ export class SettingsManager {
   }
 
   resetToDefaults() {
-    const defaultSettings = {
-      pomodoroWorkDuration: CONFIG.POMODORO.WORK_DURATION,
-      pomodoroShortBreak: CONFIG.POMODORO.SHORT_BREAK,
-      pomodoroLongBreak: CONFIG.POMODORO.LONG_BREAK,
-      pomodoroSessionsUntilLongBreak: CONFIG.POMODORO.SESSIONS_UNTIL_LONG_BREAK,
-      pomodoroNotificationsEnabled: CONFIG.POMODORO.NOTIFICATIONS_ENABLED,
-      pomodoroAutoStartBreaks: CONFIG.POMODORO.AUTO_START_BREAKS,
-      pomodoroAutoStartWork: CONFIG.POMODORO.AUTO_START_WORK,
-      affectionTaskCompletion: CONFIG.AFFECTION.TASK_COMPLETION,
-      affectionWaifuClick: CONFIG.AFFECTION.WAIFU_CLICK,
-      affectionPomodoroWork: CONFIG.AFFECTION.POMODORO_WORK_SESSION,
-      affectionPomodoroBreak: CONFIG.AFFECTION.POMODORO_BREAK_SESSION,
-      quoteRandomInterval: CONFIG.TOOLTIP.RANDOM_INTERVAL / 1000,
-      quoteDisplayDuration: CONFIG.TOOLTIP.DISPLAY_DURATION / 1000,
-      quoteEventDuration: CONFIG.TOOLTIP.EVENT_DURATION / 1000,
-      quoteAutoEnabled: CONFIG.TOOLTIP.AUTO_ENABLED,
-      spriteCycleInterval: CONFIG.SPRITE_CYCLE_INTERVAL / 1000,
-      enableExperimentalFeatures: false,
-      enableDebugMode: false,
-      enableSoundEffects: false,
-      enableVoiceQuotes: false,
-      enableCustomThemes: false,
-      enableAdvancedStats: false
-    };
-    
-    this.settings = defaultSettings;
+    this.settings = SettingsManager.getDefaultSettings();
     this.save();
     this.logger.log('Settings reset to defaults');
   }
@@ -162,30 +96,100 @@ export class SettingsManager {
 
   // Helper methods for getting converted values
   getPomodoroWorkDurationMs() {
-    return this.settings.pomodoroWorkDuration * 60 * 1000;
+    return SettingsConverter.minutesToMs(this.settings.pomodoroWorkDuration);
   }
 
   getPomodoroShortBreakMs() {
-    return this.settings.pomodoroShortBreak * 60 * 1000;
+    return SettingsConverter.minutesToMs(this.settings.pomodoroShortBreak);
   }
 
   getPomodoroLongBreakMs() {
-    return this.settings.pomodoroLongBreak * 60 * 1000;
+    return SettingsConverter.minutesToMs(this.settings.pomodoroLongBreak);
   }
 
   getQuoteRandomIntervalMs() {
-    return this.settings.quoteRandomInterval * 1000;
+    return SettingsConverter.secondsToMs(this.settings.quoteRandomInterval);
   }
 
   getQuoteDisplayDurationMs() {
-    return this.settings.quoteDisplayDuration * 1000;
+    return SettingsConverter.secondsToMs(this.settings.quoteDisplayDuration);
   }
 
   getQuoteEventDurationMs() {
-    return this.settings.quoteEventDuration * 1000;
+    return SettingsConverter.secondsToMs(this.settings.quoteEventDuration);
   }
 
   getSpriteCycleIntervalMs() {
-    return this.settings.spriteCycleInterval * 1000;
+    return SettingsConverter.secondsToMs(this.settings.spriteCycleInterval);
+  }
+
+  /**
+   * Get default settings configuration
+   * @returns {Object} Default settings object
+   */
+  static getDefaultSettings() {
+    return {
+      // Pomodoro Settings
+      pomodoroWorkDuration: CONFIG.POMODORO.WORK_DURATION,
+      pomodoroShortBreak: CONFIG.POMODORO.SHORT_BREAK,
+      pomodoroLongBreak: CONFIG.POMODORO.LONG_BREAK,
+      pomodoroSessionsUntilLongBreak: CONFIG.POMODORO.SESSIONS_UNTIL_LONG_BREAK,
+      pomodoroNotificationsEnabled: CONFIG.POMODORO.NOTIFICATIONS_ENABLED,
+      pomodoroAutoStartBreaks: CONFIG.POMODORO.AUTO_START_BREAKS,
+      pomodoroAutoStartWork: CONFIG.POMODORO.AUTO_START_WORK,
+      
+      // Affection Settings
+      affectionTaskCompletion: CONFIG.AFFECTION.TASK_COMPLETION,
+      affectionWaifuClick: CONFIG.AFFECTION.WAIFU_CLICK,
+      affectionPomodoroWork: CONFIG.AFFECTION.POMODORO_WORK_SESSION,
+      affectionPomodoroBreak: CONFIG.AFFECTION.POMODORO_BREAK_SESSION,
+      
+      // Quote Settings
+      quoteRandomInterval: SettingsConverter.msToSeconds(CONFIG.TOOLTIP.RANDOM_INTERVAL),
+      quoteDisplayDuration: SettingsConverter.msToSeconds(CONFIG.TOOLTIP.DISPLAY_DURATION),
+      quoteEventDuration: SettingsConverter.msToSeconds(CONFIG.TOOLTIP.EVENT_DURATION),
+      quoteAutoEnabled: CONFIG.TOOLTIP.AUTO_ENABLED,
+      contextAwareQuotes: CONFIG.PRIVACY.CONTEXT_AWARE_QUOTES,
+      
+      // Privacy & Context Settings
+      tabSpyEnabled: CONFIG.PRIVACY.TAB_SPY_ENABLED,
+      productivityTracking: CONFIG.PRIVACY.PRODUCTIVITY_TRACKING,
+      
+      // Sprite Settings
+      spriteCycleInterval: SettingsConverter.msToSeconds(CONFIG.SPRITE_CYCLE_INTERVAL),
+      
+      // AI Integration Settings
+      customInstructions: '',
+      aiDialoguePercentage: 0, // 0-100% AI vs static dialogue
+      
+      // Feature Flags
+      enableExperimentalFeatures: false,
+      enableDebugMode: false,
+      enableSoundEffects: false,
+      enableVoiceQuotes: false,
+      enableCustomThemes: false,
+      enableAdvancedStats: false
+    };
+  }
+}
+
+/**
+ * Utility class for converting between time units
+ */
+class SettingsConverter {
+  static secondsToMs(seconds) {
+    return seconds * 1000;
+  }
+
+  static msToSeconds(ms) {
+    return ms / 1000;
+  }
+
+  static minutesToMs(minutes) {
+    return minutes * 60 * 1000;
+  }
+
+  static msToMinutes(ms) {
+    return ms / (60 * 1000);
   }
 }
