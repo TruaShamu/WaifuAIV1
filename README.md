@@ -1,5 +1,6 @@
 # 🌸 Waifu AI - Productivity Companion Chrome Extension
-<img width="492" height="973" alt="image" src="https://github.com/user-attachments/assets/e981a884-b2e0-49e3-8196-4ae80fbf8b28" />
+<img width="493" height="955" alt="image" src="https://github.com/user-attachments/assets/a8301373-5377-4465-ad13-0acde1d716de" />
+
 
 <img width="499" height="978" alt="image" src="https://github.com/user-attachments/assets/18042825-bd3e-48a0-8d0d-1f2445e21301" />
 
