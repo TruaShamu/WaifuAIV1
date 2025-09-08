@@ -121,7 +121,13 @@ export class WaifuApp {
     });
 
     this.managerFactory.registerManager('interactionManager', InteractionManager, {
-      loadData: false
+      loadData: false,
+      configOverride: {
+        interactionInterval: CONFIG.INTERACTION.INTERVAL,
+        interactionReward: CONFIG.INTERACTION.REWARD,
+        indicatorDuration: CONFIG.INTERACTION.INDICATOR_DURATION,
+        maxMissedInteractions: CONFIG.INTERACTION.MAX_MISSED
+      }
     });
 
     this.managerFactory.registerManager('notepadManager', NotepadManager);

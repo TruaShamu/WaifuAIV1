@@ -6,7 +6,7 @@
 export class BaseManager {
   constructor(dependencies = {}) {
     this.storageProvider = dependencies.storageProvider;
-    this.logger = dependencies.logger;
+    this.logger = dependencies.logger || console; // Fallback to console if logger is undefined
     this.config = dependencies.config;
     this.container = dependencies.container;
     

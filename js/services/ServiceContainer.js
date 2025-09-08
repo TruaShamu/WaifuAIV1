@@ -55,9 +55,9 @@ export class ServiceContainer {
    */
   createDependencies() {
     return {
-      storageProvider: this.get('storageProvider'),
-      logger: this.get('logger'),
-      config: this.get('config'),
+      storageProvider: this.has('storageProvider') ? this.get('storageProvider') : null,
+      logger: this.has('logger') ? this.get('logger') : console,
+      config: this.has('config') ? this.get('config') : {},
       container: this
     };
   }

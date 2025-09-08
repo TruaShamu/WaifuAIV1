@@ -3,13 +3,13 @@
  * Manages application settings and preferences
  */
 
+import { BaseManager } from './BaseManager.js';
 import { CONFIG } from '../config.js';
 import { DataValidationService } from '../services/DataValidationService.js';
 
-export class SettingsManager {
-  constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
-    this.logger = logger;
+export class SettingsManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
     
     // Initialize with default settings
     this.settings = SettingsManager.getDefaultSettings();
@@ -19,7 +19,17 @@ export class SettingsManager {
     this.onSettingsChange = null;
   }
 
-  async load() {
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
+    this.logger.log('Settings manager ready');
+  }
+
+  /**
+   * Data loading logic
+   */
+  async onLoad() {
     try {
       const savedSettings = await this.storageProvider.get('appSettings');
       if (savedSettings && savedSettings.appSettings) {
@@ -32,7 +42,10 @@ export class SettingsManager {
     }
   }
 
-  async save() {
+  /**
+   * Data saving logic
+   */
+  async onSave() {
     try {
       await this.storageProvider.set('appSettings', this.settings);
       this.logger.log('Settings saved to storage');
@@ -44,6 +57,14 @@ export class SettingsManager {
     } catch (error) {
       this.logger.error(`Failed to save settings: ${error.message}`);
     }
+  }
+
+  /**
+   * Cleanup logic
+   */
+  async onDestroy() {
+    this.onSettingsChange = null;
+    this.settingsPanel = null;
   }
 
   get(key) {

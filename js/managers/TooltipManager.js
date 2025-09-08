@@ -3,18 +3,38 @@
  * Manages tooltip display, positioning, and animations
  */
 
+import { BaseManager } from './BaseManager.js';
 import { AnimationService } from '../services/AnimationService.js';
 import { DataValidationService } from '../services/DataValidationService.js';
 
-export class TooltipManager {
-  constructor(logger) {
-    this.logger = logger;
+export class TooltipManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.tooltip = null;
     this.isVisible = false;
     this.hideTimeout = null;
     this.currentQuote = '';
-    
+  }
+
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
     this.createTooltipElement();
+    this.logger.log('Tooltip manager ready');
+  }
+
+  /**
+   * Cleanup logic
+   */
+  async onDestroy() {
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+    }
+    if (this.tooltip) {
+      this.tooltip.remove();
+    }
   }
 
   createTooltipElement() {

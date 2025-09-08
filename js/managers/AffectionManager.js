@@ -3,25 +3,31 @@
  * Manages affection levels, persistence, and UI updates
  */
 
+import { BaseManager } from './BaseManager.js';
 import { AffectionLevel } from '../models/AffectionLevel.js';
 import { DataValidationService } from '../services/DataValidationService.js';
 import { AnimationService } from '../services/AnimationService.js';
 
-export class AffectionManager {
-  constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
-    this.logger = logger;
+export class AffectionManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.affection = new AffectionLevel();
     this.fillElement = null;
     this.textElement = null;
   }
 
-  setUIElements(fillElement, textElement) {
-    this.fillElement = fillElement;
-    this.textElement = textElement;
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
+    this.logger.log('Affection manager ready');
   }
 
-  async load() {
+  /**
+   * Data loading logic
+   */
+  async onLoad() {
     try {
       const level = await this.storageProvider.load('affectionLevel') || 0;
       this.affection = new AffectionLevel(DataValidationService.validateAffectionLevel(level));
@@ -33,13 +39,31 @@ export class AffectionManager {
     }
   }
 
-  async save() {
+  /**
+   * Data saving logic
+   */
+  async onSave() {
     try {
       await this.storageProvider.save('affectionLevel', this.affection.level);
       this.logger.log(`Saved affection level: ${this.affection.level}`);
     } catch (error) {
       this.logger.error(`Failed to save affection: ${error.message}`);
     }
+  }
+
+  /**
+   * UI elements setup - backward compatible and new pattern
+   */
+  onUIElementsSet(elements) {
+    this.fillElement = elements.fill;
+    this.textElement = elements.text;
+    this.updateUI();
+  }
+
+  setUIElements(fillElement, textElement) {
+    this.fillElement = fillElement;
+    this.textElement = textElement;
+    this.updateUI();
   }
 
   increase(amount, container = null) {

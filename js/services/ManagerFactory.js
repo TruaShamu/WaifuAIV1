@@ -25,6 +25,7 @@ export class ManagerFactory {
       uiElements: options.uiElements || null,
       initializeEarly: options.initializeEarly || false,
       loadData: options.loadData !== false, // Default to true
+      configOverride: options.configOverride || null,
       instance: null
     });
 
@@ -59,6 +60,11 @@ export class ManagerFactory {
       if (this.container.has(dep)) {
         dependencies[dep] = this.container.get(dep);
       }
+    }
+
+    // Add config overrides if provided
+    if (managerConfig.configOverride) {
+      dependencies.configOverride = managerConfig.configOverride;
     }
 
     // Create manager instance

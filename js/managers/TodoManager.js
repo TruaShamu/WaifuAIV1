@@ -3,25 +3,31 @@
  * Handles todo CRUD operations, rendering, and persistence
  */
 
+import { BaseManager } from './BaseManager.js';
 import { Todo } from '../models/Todo.js';
 import { DataValidationService } from '../services/DataValidationService.js';
 import { AnimationService } from '../services/AnimationService.js';
 
-export class TodoManager {
-  constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
-    this.logger = logger;
+export class TodoManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.todos = [];
     this.listElement = null;
     this.countElement = null;
   }
 
-  setUIElements(listElement, countElement) {
-    this.listElement = listElement;
-    this.countElement = countElement;
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
+    this.logger.log('Todo manager ready');
   }
 
-  async load() {
+  /**
+   * Data loading logic
+   */
+  async onLoad() {
     try {
       const rawTodos = await this.storageProvider.load('todos') || [];
       this.todos = DataValidationService.validateTodos(rawTodos);
@@ -33,7 +39,10 @@ export class TodoManager {
     }
   }
 
-  async save() {
+  /**
+   * Data saving logic
+   */
+  async onSave() {
     try {
       const todoData = this.todos.map(todo => ({
         text: todo.text,
@@ -50,6 +59,21 @@ export class TodoManager {
       // Try to save essential data only
       await this.saveEssentialData();
     }
+  }
+
+  /**
+   * UI elements setup - backward compatible and new pattern
+   */
+  onUIElementsSet(elements) {
+    this.listElement = elements.list;
+    this.countElement = elements.count;
+    this.updateUI();
+  }
+
+  setUIElements(listElement, countElement) {
+    this.listElement = listElement;
+    this.countElement = countElement;
+    this.updateUI();
   }
 
   async saveEssentialData() {

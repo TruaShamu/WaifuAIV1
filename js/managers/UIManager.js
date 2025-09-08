@@ -3,13 +3,15 @@
  * Manages view switching between main interface and settings panel
  */
 
+import { BaseManager } from './BaseManager.js';
 import { IconMapper } from '../services/IconMapper.js';
 import { SettingsTemplate } from '../services/SettingsTemplate.js';
 import { DataValidationService } from '../services/DataValidationService.js';
 
-export class UIManager {
-  constructor(logger) {
-    this.logger = logger;
+export class UIManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.currentView = 'main';
     this.mainContainer = null;
     this.settingsContainer = null;
@@ -19,7 +21,10 @@ export class UIManager {
     this.onViewChange = null;
   }
 
-  initialize() {
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
     this.createSettingsButton();
     this.createSettingsContainer();
     this.attachEventListeners();

@@ -1,3 +1,4 @@
+import { BaseManager } from './BaseManager.js';
 import { ShareCore } from './share/ShareCore.js';
 import { ShareUIManager } from './share/ShareUIManager.js';
 
@@ -6,15 +7,15 @@ import { ShareUIManager } from './share/ShareUIManager.js';
  * Coordinates between ShareCore (data) and ShareUIManager (UI)
  */
 
-export class ShareManager {
-    constructor(logger, waifuApp) {
-        this.logger = logger;
-        this.app = waifuApp;
-        this.isInitialized = false;
+export class ShareManager extends BaseManager {
+    constructor(dependencies) {
+        super(dependencies);
+        
+        this.app = dependencies.app;
         
         // Initialize core and UI managers
-        this.core = new ShareCore(logger, waifuApp);
-        this.ui = new ShareUIManager(logger);
+        this.core = new ShareCore(this.logger, this.app);
+        this.ui = new ShareUIManager(this.logger);
         
         // UI elements
         this.shareBtn = null;
@@ -22,6 +23,29 @@ export class ShareManager {
         // Setup callbacks
         this.setupCoreCallbacks();
         this.setupUICallbacks();
+    }
+
+    /**
+     * Initialization logic
+     */
+    async onInitialize() {
+        if (this.isInitialized) {
+            this.logger.warn('ShareManager already initialized');
+            return;
+        }
+        
+        this.setupEventListeners();
+        this.logger.log('ShareManager initialized');
+    }
+
+    /**
+     * Cleanup logic
+     */
+    async onDestroy() {
+        this.shareBtn = null;
+        if (this.ui) {
+            // Clean up UI if needed
+        }
     }
 
     /**
@@ -46,8 +70,14 @@ export class ShareManager {
      * Initialize the share manager
      */
     initialize() {
-        if (this.isInitialized) return;
-        
+        // Backward compatibility method - now handled by onInitialize
+        return this.onInitialize();
+    }
+
+    /**
+     * Set up event listeners
+     */
+    setupEventListeners() {
         this.shareBtn = document.getElementById('share-stats-btn');
         
         if (!this.shareBtn) {
@@ -55,16 +85,6 @@ export class ShareManager {
             return;
         }
         
-        this.setupEventListeners();
-        
-        this.isInitialized = true;
-        this.logger.log('ShareManager initialized');
-    }
-
-    /**
-     * Set up event listeners
-     */
-    setupEventListeners() {
         if (this.shareBtn) {
             this.shareBtn.addEventListener('click', () => {
                 this.showShareModal();

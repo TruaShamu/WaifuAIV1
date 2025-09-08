@@ -3,15 +3,34 @@
  * Manages sprite cycling, mood-based sprite selection, and interactions
  */
 
+import { BaseManager } from './BaseManager.js';
 import { CONFIG } from '../config.js';
 import { AnimationService } from '../services/AnimationService.js';
 
-export class WaifuSpriteManager {
-  constructor(imageElement, logger) {
-    this.imageElement = imageElement;
-    this.logger = logger;
+export class WaifuSpriteManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
+    this.imageElement = dependencies.waifuSprite || dependencies.imageElement;
     this.currentSprite = CONFIG.SPRITES[0];
     this.cycleInterval = null;
+  }
+
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
+    if (this.imageElement) {
+      this.imageElement.src = this.currentSprite;
+    }
+    this.logger.log('Waifu sprite manager ready');
+  }
+
+  /**
+   * Cleanup logic
+   */
+  async onDestroy() {
+    this.stopCycling();
   }
 
   startCycling() {

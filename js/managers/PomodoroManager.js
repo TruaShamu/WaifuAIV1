@@ -3,20 +3,21 @@
  * Manages Pomodoro timer functionality and UI integration
  */
 
+import { BaseManager } from './BaseManager.js';
 import { PomodoroTimer } from '../models/PomodoroTimer.js';
 import { PomodoroUIManager } from './pomodoro/PomodoroUIManager.js';
 import { AudioManager } from './pomodoro/AudioManager.js';
 import { NotificationManager } from './pomodoro/NotificationManager.js';
 
-export class PomodoroManager {
-  constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
-    this.logger = logger;
+export class PomodoroManager extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.timer = new PomodoroTimer();
     this.timerInterval = null;
     this.uiManager = new PomodoroUIManager();
-    this.audioManager = new AudioManager(logger);
-    this.notificationManager = new NotificationManager(logger);
+    this.audioManager = new AudioManager(this.logger);
+    this.notificationManager = new NotificationManager(this.logger);
     
     // Event callbacks
     this.onSessionComplete = null;
@@ -24,6 +25,54 @@ export class PomodoroManager {
     this.onStateChange = null;
     
     this.setupUICallbacks();
+  }
+
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
+    this.logger.log('Pomodoro manager ready');
+  }
+
+  /**
+   * Data loading logic
+   */
+  async onLoad() {
+    try {
+      const savedData = await this.storageProvider.get('pomodoroData');
+      if (savedData) {
+        this.timer.setState(savedData.timer || {});
+        this.logger.log('Pomodoro data loaded from storage');
+      }
+    } catch (error) {
+      this.logger.error(`Failed to load pomodoro data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Data saving logic
+   */
+  async onSave() {
+    try {
+      const dataToSave = {
+        timer: this.timer.getState(),
+        timestamp: Date.now()
+      };
+      await this.storageProvider.set('pomodoroData', dataToSave);
+      this.logger.log('Pomodoro data saved to storage');
+    } catch (error) {
+      this.logger.error(`Failed to save pomodoro data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Cleanup logic
+   */
+  async onDestroy() {
+    this.stopTimer();
+    if (this.audioManager) {
+      // Clean up audio resources if needed
+    }
   }
 
   /**
