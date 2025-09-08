@@ -4,6 +4,12 @@
  */
 
 import { TabSpyService } from './TabSpyService.js';
+import { 
+  CONTEXT_AWARE_CONFIG, 
+  validateConfig, 
+  mergeConfig, 
+  getDefaultConfig 
+} from '../config/ContextAwareConfig.js';
 
 export class ContextAwareQuoteManager {
   constructor(logger, quoteService) {
@@ -11,6 +17,7 @@ export class ContextAwareQuoteManager {
     this.quoteService = quoteService;
     this.tabSpy = new TabSpyService(logger);
     this.isEnabled = true;
+    this.config = getDefaultConfig();
     
     // Track user patterns for smarter quotes
     this.patterns = {
@@ -19,17 +26,6 @@ export class ContextAwareQuoteManager {
       productiveTime: 0,
       distractedTime: 0,
       lastProductivityCheck: Date.now()
-    };
-    
-    // Mood multipliers based on context
-    this.moodMultipliers = {
-      productivity: 1.5,
-      learning: 1.3,
-      news: 1.0,
-      other: 1.0,
-      shopping: 0.8,
-      social: 0.6,
-      entertainment: 0.4
     };
   }
 
@@ -71,7 +67,8 @@ export class ContextAwareQuoteManager {
       
       this.patterns.lastProductivityCheck = now;
       
-      this.logger.log(`🧠 Tab pattern update: ${this.patterns.siteSwitches} switches, ${Math.round(this.patterns.productiveTime / 60000)}m productive`);
+      const productiveMinutes = Math.round(this.patterns.productiveTime / this.config.TIMERS.MILLISECONDS_PER_MINUTE);
+      this.logger.log(`🧠 Tab pattern update: ${this.patterns.siteSwitches} switches, ${productiveMinutes}m productive`);
     }
   }
 
@@ -86,12 +83,12 @@ export class ContextAwareQuoteManager {
     const context = this.tabSpy.getContext();
     const productivity = this.getProductivityInsight();
     
-    // Choose quote strategy based on context
-    if (context?.isDistraction && productivity.score < 0.3) {
+    // Choose quote strategy based on context using configuration thresholds
+    if (context?.isDistraction && productivity.score < this.config.THRESHOLDS.LOW_PRODUCTIVITY_SCORE) {
       return this.getMotivationalQuote(context);
     } else if (context?.isProductive) {
       return this.getEncouragementQuote(context);
-    } else if (this.tabSpy.isDistractedTooLong()) {
+    } else if (this.tabSpy.isDistractedTooLong(this.config.TIMERS.DISTRACTION_THRESHOLD)) {
       return this.getGentleNudgeQuote();
     } else {
       return this.getPersonalizedQuote(context, productivity);
@@ -102,15 +99,12 @@ export class ContextAwareQuoteManager {
    * Get motivational quote for when user is distracted
    */
   getMotivationalQuote(context) {
-    const quotes = [
-      "Hey~ I know that site is fun, but our tasks are waiting! (◕‿◕)",
-      "Psst... remember our productivity goals? ♡",
-      "I believe in your focus! Come back to our tasks when you're ready~",
-      "Social media will always be there, but this productive moment won't! ✧",
-      "Ehehe~ I see you getting distracted. Need a gentle reminder? ♪",
-      "That's enough scrolling for now, don't you think? (｡◕‿◕｡)",
-      "I'm not jealous of that website... much~ Come back to me? ♡"
-    ];
+    const quotes = this.tabSpy.getMotivationalQuotes();
+    
+    if (quotes.length === 0) {
+      // Fallback if dialogue not loaded
+      return this.config.FALLBACK_QUOTES.motivational;
+    }
     
     return this.addContextFlavor(quotes[Math.floor(Math.random() * quotes.length)], context);
   }
@@ -119,15 +113,12 @@ export class ContextAwareQuoteManager {
    * Get encouragement quote for productive work
    */
   getEncouragementQuote(context) {
-    const quotes = [
-      "You're in the zone! I love watching you work so focused~ ♡",
-      "Such productivity! You're making me proud! (◕‿◕)♡",
-      "Keep going! You're absolutely crushing it today! ✧",
-      "This is why I admire you - your dedication is amazing~",
-      "Look at you being all professional and awesome! ♪",
-      "You're on fire today! But don't forget to hydrate~ (◡‿◡)",
-      "Productivity mode: ACTIVATED! You're unstoppable! ✨"
-    ];
+    const quotes = this.tabSpy.getEncouragementQuotes();
+    
+    if (quotes.length === 0) {
+      // Fallback if dialogue not loaded
+      return this.config.FALLBACK_QUOTES.encouragement;
+    }
     
     return this.addContextFlavor(quotes[Math.floor(Math.random() * quotes.length)], context);
   }
@@ -136,15 +127,12 @@ export class ContextAwareQuoteManager {
    * Get gentle nudge for when user has been distracted too long
    */
   getGentleNudgeQuote() {
-    const quotes = [
-      "You've been exploring for a while~ Maybe time for a productivity break? ♡",
-      "I'm getting a little worried... are you avoiding our tasks? (｡◕‿◕｡)",
-      "10 minutes of fun is great! But maybe we should check our todo list? ♪",
-      "I don't want to nag, but... our goals are calling! ✧",
-      "Time flies when you're having fun! But so does our productive time~ ♡",
-      "Gentle reminder from your favorite AI: tasks are waiting! (◕‿◕)",
-      "I promise our work can be more interesting than that website~ ♡"
-    ];
+    const quotes = this.tabSpy.getGentleNudgeQuotes();
+    
+    if (quotes.length === 0) {
+      // Fallback if dialogue not loaded
+      return this.config.FALLBACK_QUOTES.gentle_nudge;
+    }
     
     return quotes[Math.floor(Math.random() * quotes.length)];
   }
@@ -153,22 +141,27 @@ export class ContextAwareQuoteManager {
    * Get personalized quote based on patterns and context
    */
   getPersonalizedQuote(context, productivity) {
-    const sessionHours = (Date.now() - this.patterns.sessionStart) / (1000 * 60 * 60);
+    const sessionHours = (Date.now() - this.patterns.sessionStart) / this.config.TIMERS.MILLISECONDS_PER_HOUR;
     const switchFrequency = this.patterns.siteSwitches / Math.max(sessionHours, 0.1);
     
+    // Get personalized pattern quotes from dialogue collection
+    const personalizedQuotes = this.quoteService.getQuotesByCategory('personalized');
+    
     // High switch frequency = scattered attention
-    if (switchFrequency > 10) {
-      return "You're jumping around a lot today! Let's find some focus together~ ♡";
+    if (switchFrequency > this.config.THRESHOLDS.HIGH_SWITCH_FREQUENCY && personalizedQuotes.length > 0) {
+      return personalizedQuotes[0] || this.config.FALLBACK_QUOTES.scattered_attention;
     }
     
     // Long session with good productivity
-    if (sessionHours > 2 && productivity.score > 0.7) {
-      return "Wow! You've been so productive today! Maybe time for a well-deserved break? ✧";
+    if (sessionHours > this.config.THRESHOLDS.LONG_SESSION_HOURS && 
+        productivity.score > this.config.THRESHOLDS.HIGH_PRODUCTIVITY_SCORE && 
+        personalizedQuotes.length > 1) {
+      return personalizedQuotes[1] || this.config.FALLBACK_QUOTES.productive_break;
     }
     
     // New session
-    if (sessionHours < 0.5) {
-      return "Ready for another productive session together? I'm excited! ♪";
+    if (sessionHours < this.config.THRESHOLDS.NEW_SESSION_HOURS && personalizedQuotes.length > 2) {
+      return personalizedQuotes[2] || this.config.FALLBACK_QUOTES.new_session;
     }
     
     // Default contextual quote
@@ -186,22 +179,7 @@ export class ContextAwareQuoteManager {
   addContextFlavor(quote, context) {
     if (!context) return quote;
     
-    const flavorMap = {
-      productivity: {
-        prefix: ["💻 ", "⌨️ ", "🔧 "],
-        suffix: [" Keep coding! ♡", " You're a coding star! ✧", " Dev life is best life! ♪"]
-      },
-      learning: {
-        prefix: ["📚 ", "🧠 ", "✨ "],
-        suffix: [" Knowledge is power! ♡", " Smart cookie! ✧", " Learning is so attractive~ ♪"]
-      },
-      social: {
-        prefix: ["📱 ", "💬 ", "👀 "],
-        suffix: [" But don't forget me! ♡", " I'm more fun than social media~ ✧", ""]
-      }
-    };
-    
-    const flavor = flavorMap[context.category];
+    const flavor = this.config.CONTEXT_FLAVORS[context.category];
     if (flavor) {
       const prefix = flavor.prefix[Math.floor(Math.random() * flavor.prefix.length)];
       const suffix = flavor.suffix[Math.floor(Math.random() * flavor.suffix.length)];
@@ -220,10 +198,10 @@ export class ContextAwareQuoteManager {
     
     return {
       score,
-      productiveMinutes: Math.round(this.patterns.productiveTime / 60000),
-      distractedMinutes: Math.round(this.patterns.distractedTime / 60000),
+      productiveMinutes: Math.round(this.patterns.productiveTime / this.config.TIMERS.MILLISECONDS_PER_MINUTE),
+      distractedMinutes: Math.round(this.patterns.distractedTime / this.config.TIMERS.MILLISECONDS_PER_MINUTE),
       siteSwitches: this.patterns.siteSwitches,
-      sessionHours: (Date.now() - this.patterns.sessionStart) / (1000 * 60 * 60)
+      sessionHours: (Date.now() - this.patterns.sessionStart) / this.config.TIMERS.MILLISECONDS_PER_HOUR
     };
   }
 
@@ -234,7 +212,7 @@ export class ContextAwareQuoteManager {
     const context = this.tabSpy.getContext();
     if (!context) return 1.0;
     
-    return this.moodMultipliers[context.category] || 1.0;
+    return this.config.MOOD_MULTIPLIERS[context.category] || 1.0;
   }
 
   /**
@@ -255,7 +233,7 @@ export class ContextAwareQuoteManager {
         
         this.patterns.lastProductivityCheck = now;
       }
-    }, 30000); // Update every 30 seconds
+    }, this.config.TIMERS.PRODUCTIVITY_TRACKING_INTERVAL);
   }
 
   /**
@@ -279,23 +257,86 @@ export class ContextAwareQuoteManager {
   getRecommendations(insight, context) {
     const recs = [];
     
-    if (insight.score < 0.3 && insight.sessionHours > 1) {
+    if (insight.score < this.config.THRESHOLDS.LOW_PRODUCTIVITY_SCORE && 
+        insight.sessionHours > 1) {
       recs.push("Consider a 5-minute break to refocus");
     }
     
-    if (insight.siteSwitches > 20 && insight.sessionHours < 2) {
+    if (insight.siteSwitches > (this.config.THRESHOLDS.HIGH_SWITCH_FREQUENCY * 2) && 
+        insight.sessionHours < this.config.THRESHOLDS.LONG_SESSION_HOURS) {
       recs.push("Try using a focus timer to reduce distractions");
     }
     
-    if (context?.isDistraction && insight.productiveMinutes > 60) {
+    if (context?.isDistraction && 
+        insight.productiveMinutes > 60) {
       recs.push("You've earned this break! Enjoy it guilt-free");
     }
     
-    if (insight.productiveMinutes > 120) {
+    if (insight.productiveMinutes > this.config.THRESHOLDS.BREAK_SUGGESTION_MINUTES) {
       recs.push("Amazing productivity! Consider a longer break");
     }
     
     return recs;
+  }
+
+  /**
+   * Update configuration values
+   * @param {Object} newConfig - Partial configuration object to merge
+   */
+  updateConfiguration(newConfig) {
+    const mergedConfig = mergeConfig(newConfig);
+    const validation = validateConfig(mergedConfig);
+    
+    if (!validation.isValid) {
+      this.logger.error('Invalid configuration:', validation.errors);
+      throw new Error(`Configuration validation failed: ${validation.errors.join(', ')}`);
+    }
+    
+    this.config = mergedConfig;
+    this.logger.log('🧠 Context-aware configuration updated and validated');
+  }
+
+  /**
+   * Get current configuration
+   * @returns {Object} Current configuration object
+   */
+  getConfiguration() {
+    return JSON.parse(JSON.stringify(this.config));
+  }
+
+  /**
+   * Reset configuration to defaults
+   */
+  resetConfiguration() {
+    this.config = getDefaultConfig();
+    this.logger.log('🧠 Context-aware configuration reset to defaults');
+  }
+
+  /**
+   * Load configuration preset
+   * @param {string} presetName - Name of the preset (FOCUSED, RELAXED, BALANCED)
+   */
+  loadConfigurationPreset(presetName) {
+    const { CONFIG_PRESETS } = require('../config/ContextAwareConfig.js');
+    
+    if (!CONFIG_PRESETS[presetName]) {
+      throw new Error(`Unknown configuration preset: ${presetName}`);
+    }
+    
+    this.updateConfiguration(CONFIG_PRESETS[presetName]);
+    this.logger.log(`🧠 Loaded configuration preset: ${presetName}`);
+  }
+
+  /**
+   * Add custom context flavor
+   * @param {string} category - Context category
+   * @param {Object} flavor - Flavor object with prefix and suffix arrays
+   */
+  addContextFlavor(category, flavor) {
+    if (!this.config.CONTEXT_FLAVORS[category]) {
+      this.config.CONTEXT_FLAVORS[category] = flavor;
+      this.logger.log(`🧠 Added context flavor for category: ${category}`);
+    }
   }
 
   /**

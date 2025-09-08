@@ -6,109 +6,56 @@
 export class QuoteService {
   constructor(logger) {
     this.logger = logger;
-    this.quotes = [
-      "Kyaa~ You're working so hard! (◕‿◕)♡",
-      "Don't forget to take breaks, nya~! ♪(´▽｀)",
-      "You're doing amazing! Keep it up! ✧･ﾟ: *✧･ﾟ:*",
-      "Ehehe~ I believe in you! (｡◕‿◕｡)",
-      "Ganbatte kudasai! Fighting~! ٩(◕‿◕)۶",
-      "You're my favorite human! ♡(˃͈ દ ˂͈ ༶ )",
-      "Uwaa~ So productive today! (＾◡＾)",
-      "Your hard work makes me happy! ♡⃛◟( ˊ̱˂˃ˋ̱ )◞⸜₍ ˍ́˱˲ˍ̀ ₎⸝◟( ˊ̱˂˃ˋ̱ )◞♡⃛",
-      "Let's do our best together! ☆ﾐ(o*･ω･)ﾉ",
-      "I'm cheering you on! Go go go~! \\(^o^)/",
-      "Sugoi desu ne~! You're incredible! (๑˃̵ᴗ˂̵)و",
-      "Time for a little break? Tea time! ☕️ (*´▽`*)",
-      "Your dedication is inspiring! ♡(˃͈ દ ˂͈ ༶ )",
-      "Nya nya~ Keep being awesome! =^._.^= ∫",
-      "I'm so proud of you! ♪ヽ(´▽｀)/",
-      "Working hard or hardly working? Ehehe~ (´∀｀)♡",
-      "You light up my day! ✨(◕‿◕)✨",
-      "Kawaii productivity mode activated! ♡( ◡ ‿ ◡ )",
-      "Remember: you're doing great! (｡♥‿♥｡)",
-      "Motto motto~! A little more! ♪(´ε｀ )"
-    ];
     
-    this.moodQuotes = {
-      happy: [
-        "Yay! I'm so happy today! ♪(´▽｀)",
-        "Everything is wonderful when you're here! ♡",
-        "Happiness level: Maximum! ✧･ﾟ: *✧･ﾟ:*",
-        "Today is the best day ever! (◕‿◕)♡"
-      ],
-      neutral: [
-        "Just another peaceful day~ (´∀｀)",
-        "How are you feeling today? ♪",
-        "Let's make today special! ☆",
-        "Ready for whatever comes our way! ♡"
-      ],
-      sad: [
-        "Don't worry, tomorrow will be better... (´；ω；`)",
-        "I'm here for you, always... ♡",
-        "Even sad days can have beautiful moments...",
-        "Let's take it one step at a time... ♪"
-      ],
-      newTask: [
-        "Ooh, a new adventure! ☆",
-        "Let's tackle this together! ♪",
-        "I believe you can do it! ♡",
-        "Another chance to shine! ✧"
-      ],
-      pomodoroWorkStart: [
-        "Focus time! Let's get productive! 💪(◕‿◕)",
-        "Pomodoro session starting! Ganbatte! ♪",
-        "Work mode activated! I believe in you! ✧",
-        "Time to be amazing! Focus, focus! (｡◕‿◕｡)♡"
-      ],
-      pomodoroWorkComplete: [
-        "Fantastic work session! 🍅✨ Time for a break!",
-        "You're so focused! Break time deserved! ♪(´▽｀)",
-        "Amazing productivity! Rest those brain cells! ♡",
-        "Work session complete! You're incredible! ٩(◕‿◕)۶"
-      ],
-      pomodoroBreakStart: [
-        "Break time! Relax and recharge! ☕️(◕‿◕)",
-        "Rest well, you've earned it! ♪",
-        "Take a deep breath and relax! ✧",
-        "Break time magic! Restore your energy! ♡"
-      ],
-      pomodoroBreakComplete: [
-        "Break over! Ready to conquer more tasks? 💪",
-        "Recharged and ready! Let's go! ♪(´▽｀)",
-        "Feeling fresh? Time to focus again! ✧",
-        "Break complete! Back to being awesome! ♡"
-      ],
-      pomodoroLongBreakStart: [
-        "Long break time! You've earned this! 🌟",
-        "Extended rest mode! Relax completely! ♪",
-        "Long break magic! Take your time! ✧･ﾟ: *✧･ﾟ:*",
-        "Big break time! You've been amazing! ♡"
-      ],
-      waifuInteraction: [
-        "Perfect timing! Thanks for noticing me! 💖(◕‿◕)",
-        "Yay! You caught my signal! I love you! ♡✧",
-        "Excellent! Our connection grows stronger! ♪(´▽｀)",
-        "Wonderful timing! You're so attentive! ✨(◕‿◕)✨",
-        "Amazing! You're always there for me! 💕",
-        "Kyaa~! You noticed my heart! So happy! ♡(˃͈ દ ˂͈ ༶ )"
-      ],
-      waifuClick: [
-        "Ehehe~ That tickles! But only special moments give affection now! ♪",
-        "I appreciate the attention, but wait for my signal! 💖",
-        "Cute! But save your energy for when I really need you! ♡",
-        "Aww~ I love the affection, but timing is everything! ✧"
-      ]
+    // Dialogue collection for all quotes
+    this.dialogueCollection = {};
+    this.dialogueLoaded = false;
+  }
+
+  /**
+   * Load dialogue collection from JSON file
+   */
+  async loadDialogueCollection() {
+    try {
+      const response = await fetch(chrome.runtime.getURL('waifu_dialogue_collection.json'));
+      if (!response.ok) {
+        throw new Error(`Failed to load dialogue collection: ${response.status}`);
+      }
+      
+      this.dialogueCollection = await response.json();
+      this.dialogueLoaded = true;
+      this.logger.log('QuoteService: Dialogue collection loaded from file');
+    } catch (error) {
+      this.logger.error(`Failed to load dialogue collection: ${error.message}`);
+      this.dialogueLoaded = false;
+      this.dialogueCollection = {};
     }
-    };
+  }
+
+  /**
+   * Initialize the quote service
+   */
+  async initialize() {
+    await this.loadDialogueCollection();
+  }
 
   getRandomQuote(mood = null) {
-    let quoteArray;
+    if (!this.dialogueLoaded) {
+      this.logger.warn('Dialogue collection not loaded yet');
+      return "Working hard? I'm here cheering you on! ♡";
+    }
+
+    let quoteArray = [];
     
-    if (mood && this.moodQuotes[mood]) {
-      quoteArray = this.moodQuotes[mood];
+    if (mood && this.dialogueCollection.mood_based_quotes?.[mood]) {
+      quoteArray = this.dialogueCollection.mood_based_quotes[mood];
       this.logger.log(`Getting ${mood} mood quote`);
     } else {
-      quoteArray = this.quotes;
+      quoteArray = this.dialogueCollection.general_quotes || [];
+    }
+    
+    if (quoteArray.length === 0) {
+      return "You're doing great! Keep it up! ♡";
     }
     
     const randomIndex = Math.floor(Math.random() * quoteArray.length);
@@ -119,46 +66,93 @@ export class QuoteService {
   }
 
   getQuoteByEvent(eventType) {
-    const eventQuotes = {
-      taskComplete: [
-        "Yatta! Task completed! ♪(´▽｀)",
-        "Amazing work! You did it! ✧･ﾟ: *✧･ﾟ:*",
-        "One more down! You're on fire! ♡",
-        "Sugoi! Keep up the momentum! ٩(◕‿◕)۶"
-      ],
-      waifuClick: [
-        "Kyaa~ That tickles! (◕‿◕)♡",
-        "Ehehe~ You're so sweet! ♪",
-        "More headpats please! (｡◕‿◕｡)",
-        "I love your attention! ♡⃛"
-      ],
-      newTask: [
-        "Ooh, a new adventure! ☆",
-        "Let's tackle this together! ♪",
-        "I believe you can do it! ♡",
-        "Another chance to shine! ✧"
-      ]
+    if (!this.dialogueLoaded) {
+      this.logger.warn('Dialogue collection not loaded yet');
+      return this.getRandomQuote();
+    }
+
+    // Map event types to dialogue collection keys
+    const eventMapping = {
+      taskComplete: 'task_complete',
+      waifuClick: 'waifu_click',
+      newTask: 'new_task',
+      waifuInteraction: 'waifu_interaction_success',
+      pomodoroWorkStart: 'work_start',
+      pomodoroWorkComplete: 'work_complete',
+      pomodoroBreakStart: 'break_start',
+      pomodoroBreakComplete: 'break_complete',
+      pomodoroLongBreakStart: 'long_break_start'
     };
 
-    if (eventQuotes[eventType]) {
-      const quotes = eventQuotes[eventType];
+    // First try event_specific_quotes
+    const eventKey = eventMapping[eventType];
+    let quotes = this.dialogueCollection.event_specific_quotes?.[eventKey];
+    
+    // Then try pomodoro_quotes for pomodoro events
+    if (!quotes && eventType.startsWith('pomodoro')) {
+      quotes = this.dialogueCollection.pomodoro_quotes?.[eventKey];
+    }
+    
+    // Then try interaction_quotes for interaction events
+    if (!quotes && eventType.includes('waifu')) {
+      const interactionKey = eventType === 'waifuClick' ? 'waifu_click_no_signal' : 'waifu_interaction_success';
+      quotes = this.dialogueCollection.interaction_quotes?.[interactionKey];
+    }
+
+    if (quotes && Array.isArray(quotes) && quotes.length > 0) {
       const randomIndex = Math.floor(Math.random() * quotes.length);
       return quotes[randomIndex];
     }
 
+    // Fallback to random quote
     return this.getRandomQuote();
   }
 
   getAllQuotes() {
-    return [...this.quotes];
+    if (!this.dialogueLoaded) {
+      return [];
+    }
+    return this.dialogueCollection.general_quotes || [];
   }
 
   addCustomQuote(quote) {
     if (quote && quote.trim()) {
-      this.quotes.push(quote.trim());
-      this.logger.log(`Added custom quote: ${quote}`);
-      return true;
+      // Add to general quotes if dialogue is loaded
+      if (this.dialogueLoaded && this.dialogueCollection.general_quotes) {
+        this.dialogueCollection.general_quotes.push(quote.trim());
+        this.logger.log(`Added custom quote: ${quote}`);
+        return true;
+      }
     }
     return false;
+  }
+
+  /**
+   * Get quotes by category from dialogue collection
+   */
+  getQuotesByCategory(category) {
+    if (!this.dialogueLoaded) return [];
+    
+    // Support for different quote categories
+    const categories = {
+      general: this.dialogueCollection.general_quotes,
+      motivational: this.dialogueCollection.motivational_quotes,
+      encouragement: this.dialogueCollection.encouragement_quotes,
+      gentle_nudge: this.dialogueCollection.gentle_nudge_quotes,
+      personalized: this.dialogueCollection.personalized_pattern_quotes
+    };
+    
+    return categories[category] || [];
+  }
+
+  /**
+   * Get a random quote from a specific category
+   */
+  getRandomQuoteFromCategory(category) {
+    const quotes = this.getQuotesByCategory(category);
+    if (quotes.length === 0) return this.getRandomQuote();
+    
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    return quotes[randomIndex];
   }
 }

@@ -110,6 +110,9 @@ export class WaifuApp {
       // Load settings first
       await this.settingsManager.load();
       
+      // Initialize services
+      await this.quoteService.initialize();
+      
       // Load data
       await Promise.all([
         this.affectionManager.load(),

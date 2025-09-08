@@ -16,6 +16,30 @@ export class TabSpyService {
     // Will be loaded from external JSON file
     this.siteCategories = {};
     this.siteCategoriesLoaded = false;
+    
+    // Dialogue collection for contextual quotes
+    this.dialogueCollection = {};
+    this.dialogueLoaded = false;
+  }
+
+  /**
+   * Load dialogue collection from JSON file
+   */
+  async loadDialogueCollection() {
+    try {
+      const response = await fetch(chrome.runtime.getURL('waifu_dialogue_collection.json'));
+      if (!response.ok) {
+        throw new Error(`Failed to load dialogue collection: ${response.status}`);
+      }
+      
+      this.dialogueCollection = await response.json();
+      this.dialogueLoaded = true;
+      this.logger.log('🕵️ Dialogue collection loaded from file');
+    } catch (error) {
+      this.logger.error(`Failed to load dialogue collection: ${error.message}`);
+      this.dialogueLoaded = false;
+      this.dialogueCollection = {};
+    }
   }
 
   /**
@@ -65,8 +89,11 @@ export class TabSpyService {
     }
 
     try {
-      // Load site categories first
-      await this.loadSiteCategories();
+      // Load site categories and dialogue collection
+      await Promise.all([
+        this.loadSiteCategories(),
+        this.loadDialogueCollection()
+      ]);
 
       // Listen for tab changes
       chrome.tabs.onActivated.addListener((activeInfo) => {
@@ -211,52 +238,52 @@ export class TabSpyService {
    */
   getContextualQuotes() {
     const context = this.getContext();
-    if (!context) return [];
+    if (!context || !this.dialogueLoaded) return [];
 
-    const quotes = {
-      productivity: [
-        "Kyaa~ You're being so productive! I'm proud of you! ♡",
-        "Look at you coding like a pro! (◕‿◕)♡",
-        "Such focus! You're amazing when you work hard~",
-        "Ehehe~ GitHub again? You're such a dedicated developer!"
-      ],
-      
-      learning: [
-        "Ooh~ Learning something new? I love watching you grow! ✧",
-        "So studious! You're getting smarter every day~",
-        "Education is attractive, you know? (｡◕‿◕｡)",
-        "Stack Overflow again? My little problem solver~"
-      ],
-      
-      social: [
-        "Taking a social break? That's okay, but don't forget our tasks~",
-        "Social media can wait! We have productivity goals! (◡‿◡)",
-        "Mmm... maybe just a quick scroll? Then back to work? ♪",
-        "I see you there... come back to me when you're ready~"
-      ],
-      
-      entertainment: [
-        "Entertainment time? You've earned a break! But not too long~ ♡",
-        "Netflix and... productivity later? (◕‿◕)",
-        "Anime is good for inspiration! Just remember our tasks~",
-        "Having fun? I'll be here when you're ready to work again!"
-      ],
-      
-      shopping: [
-        "Shopping again? My wallet is crying... (╥﹏╥)",
-        "Ooh~ What are you buying? Anything for me? ♡",
-        "Retail therapy? I understand, but our tasks are waiting~",
-        "Amazon cart full again? You're so bad~ (◡‿◡)"
-      ],
-      
-      other: [
-        "Exploring the web? I'm curious what you're looking at~",
-        "New site? Stay safe out there! ♡",
-        "Wandering the internet? I'll keep you company~"
-      ]
+    // Map tab spy categories to dialogue collection keys
+    const categoryMapping = {
+      productivity: 'productivity_sites',
+      learning: 'learning_sites',
+      social: 'social_media',
+      entertainment: 'entertainment',
+      shopping: 'shopping',
+      news: 'unknown_sites', // Use unknown_sites for news as fallback
+      other: 'unknown_sites'
     };
 
-    return quotes[context.category] || quotes.other;
+    const dialogueKey = categoryMapping[context.category] || 'unknown_sites';
+    const contextualQuotes = this.dialogueCollection?.contextual_quotes?.[dialogueKey];
+
+    if (contextualQuotes && Array.isArray(contextualQuotes)) {
+      return contextualQuotes;
+    }
+
+    // Fallback to unknown_sites quotes if specific category not found
+    return this.dialogueCollection?.contextual_quotes?.unknown_sites || [];
+  }
+
+  /**
+   * Get motivational quotes for when user is distracted too long
+   */
+  getMotivationalQuotes() {
+    if (!this.dialogueLoaded) return [];
+    return this.dialogueCollection?.motivational_quotes || [];
+  }
+
+  /**
+   * Get encouragement quotes for productive behavior
+   */
+  getEncouragementQuotes() {
+    if (!this.dialogueLoaded) return [];
+    return this.dialogueCollection?.encouragement_quotes || [];
+  }
+
+  /**
+   * Get gentle nudge quotes for mild redirection
+   */
+  getGentleNudgeQuotes() {
+    if (!this.dialogueLoaded) return [];
+    return this.dialogueCollection?.gentle_nudge_quotes || [];
   }
 
   /**
