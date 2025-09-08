@@ -3,10 +3,12 @@
  * Handles daily mood tracking with calendar grid display
  */
 
-export class MoodTracker {
-  constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
-    this.logger = logger;
+import { BaseManager } from './BaseManager.js';
+
+export class MoodTracker extends BaseManager {
+  constructor(dependencies) {
+    super(dependencies);
+    
     this.currentDate = new Date();
     this.moodData = {};
     
@@ -20,9 +22,26 @@ export class MoodTracker {
     };
   }
 
-  async initialize() {
+  /**
+   * Initialization logic
+   */
+  async onInitialize() {
     await this.loadMoodData();
-    this.logger.log('MoodTracker initialized');
+    this.logger.log('Mood tracker ready');
+  }
+
+  /**
+   * Data loading logic
+   */
+  async onLoad() {
+    await this.loadMoodData();
+  }
+
+  /**
+   * Data saving logic
+   */
+  async onSave() {
+    await this.saveMoodData();
   }
 
   async loadMoodData() {

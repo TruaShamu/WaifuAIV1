@@ -5,6 +5,10 @@
 
 import { CONFIG } from './config.js';
 import { DataValidationService } from './services/DataValidationService.js';
+import { ServiceContainer } from './services/ServiceContainer.js';
+import { ManagerFactory } from './services/ManagerFactory.js';
+
+// Manager imports
 import { WaifuSpriteManager } from './managers/WaifuSpriteManager.js';
 import { AffectionManager } from './managers/AffectionManager.js';
 import { TodoManager } from './managers/TodoManager.js';
@@ -16,88 +20,136 @@ import { InteractionManager } from './managers/InteractionManager.js';
 import { NotepadManager } from './managers/NotepadManager.js';
 import { ShareManager } from './managers/ShareManager.js';
 import { MoodTracker } from './managers/MoodTracker.js';
+
+// Service imports
 import { QuoteService } from './services/QuoteService.js';
 import { ContextAwareQuoteManager } from './services/ContextAwareQuoteManager.js';
 
 export class WaifuApp {
   constructor(storageProvider, logger) {
-    this.storageProvider = storageProvider;
+    // Store references for direct access
     this.logger = logger;
+    this.storageProvider = storageProvider;
     
-    // Initialize services
-    this.quoteService = new QuoteService(logger);
-    this.contextAwareQuotes = new ContextAwareQuoteManager(logger, this.quoteService);
+    // Create service container and register core services
+    this.container = new ServiceContainer();
+    this.setupServices(storageProvider, logger);
     
-    // Initialize managers
-    this.settingsManager = new SettingsManager(storageProvider, logger);
-    this.uiManager = new UIManager(logger);
+    // Create manager factory and register managers
+    this.managerFactory = new ManagerFactory(this.container);
+    this.setupManagers();
     
-    this.waifuManager = new WaifuSpriteManager(
-      document.getElementById('waifu-sprite'),
-      logger
-    );
-    
-    this.affectionManager = new AffectionManager(storageProvider, logger);
-    this.todoManager = new TodoManager(storageProvider, logger);
-    this.tooltipManager = new TooltipManager(logger);
-    this.pomodoroManager = new PomodoroManager(storageProvider, logger);
-    this.notepadManager = new NotepadManager(storageProvider, logger);
-    this.shareManager = new ShareManager(logger, this);
-    this.moodTracker = new MoodTracker(storageProvider, logger);
-    
-    // Initialize interaction manager
-    this.interactionManager = new InteractionManager(logger, {
-      interactionInterval: CONFIG.INTERACTION.INTERVAL,
-      interactionReward: CONFIG.INTERACTION.REWARD,
-      indicatorDuration: CONFIG.INTERACTION.INDICATOR_DURATION,
-      maxMissedInteractions: CONFIG.INTERACTION.MAX_MISSED
-    });
+    // Manager instances (will be populated during initialization)
+    this.managers = {};
     
     // Quote timer for random quotes
     this.quoteTimer = null;
+  }
+
+  /**
+   * Setup core services in the container
+   */
+  setupServices(storageProvider, logger) {
+    // Register core services
+    this.container.register('storageProvider', () => storageProvider);
+    this.container.register('logger', () => logger);
+    this.container.register('config', () => CONFIG);
+    this.container.register('app', () => this);
+
+    // Register service instances
+    this.container.register('quoteService', (container) => 
+      new QuoteService(container.get('logger'))
+    );
     
-    // Set up UI elements with null checks
-    const affectionFill = document.getElementById('affection-fill');
-    const affectionText = document.getElementById('affection-text');
-    if (affectionFill && affectionText) {
-      this.affectionManager.setUIElements(affectionFill, affectionText);
-    }
-    
-    const todoList = document.getElementById('todo-list');
-    const taskCount = document.getElementById('task-count');
-    if (todoList && taskCount) {
-      this.todoManager.setUIElements(todoList, taskCount);
-    }
-    
-    // Set up Pomodoro UI elements with null checks
-    const pomodoroElements = {
-      timerDisplay: document.getElementById('timer-time'),
-      sessionDisplay: document.getElementById('timer-session'),
-      progressBar: document.getElementById('timer-fill'),
-      startButton: document.getElementById('pomodoro-start'),
-      pauseButton: document.getElementById('pomodoro-pause'),
-      stopButton: document.getElementById('pomodoro-stop'),
-      resetButton: document.getElementById('pomodoro-reset'),
-      statsDisplay: {
-        workSessions: document.getElementById('work-sessions'),
-        totalSessions: document.getElementById('total-sessions'),
-        productiveTime: document.getElementById('productive-time')
+    this.container.register('contextAwareQuotes', (container) => 
+      new ContextAwareQuoteManager(container.get('logger'), container.get('quoteService'))
+    );
+  }
+
+  /**
+   * Register all managers with the factory
+   */
+  setupManagers() {
+    // UI Manager - needs early initialization
+    this.managerFactory.registerManager('uiManager', UIManager, {
+      initializeEarly: true,
+      loadData: false
+    });
+
+    // Settings Manager - needs early initialization and data loading
+    this.managerFactory.registerManager('settingsManager', SettingsManager, {
+      initializeEarly: true
+    });
+
+    // Core data managers
+    this.managerFactory.registerManager('affectionManager', AffectionManager, {
+      uiElements: {
+        fill: 'affection-fill',
+        text: 'affection-text'
       }
-    };
-    
-    // Only set UI elements if they exist
-    if (Object.values(pomodoroElements).every(Boolean)) {
-      this.pomodoroManager.setUIElements(pomodoroElements);
-    } else {
-      this.logger.warn('Some Pomodoro UI elements are missing');
-    }
-    
-    this.setupEventHandlers();
+    });
+
+    this.managerFactory.registerManager('todoManager', TodoManager, {
+      uiElements: {
+        list: 'todo-list',
+        count: 'task-count'
+      }
+    });
+
+    // Pomodoro Manager with complex UI elements
+    this.managerFactory.registerManager('pomodoroManager', PomodoroManager, {
+      uiElements: {
+        timerDisplay: 'timer-time',
+        sessionDisplay: 'timer-session',
+        progressBar: 'timer-fill',
+        startButton: 'pomodoro-start',
+        pauseButton: 'pomodoro-pause',
+        stopButton: 'pomodoro-stop',
+        resetButton: 'pomodoro-reset',
+        statsDisplay: {
+          workSessions: 'work-sessions',
+          totalSessions: 'total-sessions',
+          productiveTime: 'productive-time'
+        }
+      }
+    });
+
+    // Feature managers
+    this.managerFactory.registerManager('waifuManager', WaifuSpriteManager, {
+      dependencies: ['waifuSprite'],
+      loadData: false
+    });
+
+    this.managerFactory.registerManager('tooltipManager', TooltipManager, {
+      loadData: false
+    });
+
+    this.managerFactory.registerManager('interactionManager', InteractionManager, {
+      loadData: false,
+      configOverride: {
+        interactionInterval: CONFIG.INTERACTION.INTERVAL,
+        interactionReward: CONFIG.INTERACTION.REWARD,
+        indicatorDuration: CONFIG.INTERACTION.INDICATOR_DURATION,
+        maxMissedInteractions: CONFIG.INTERACTION.MAX_MISSED
+      }
+    });
+
+    this.managerFactory.registerManager('notepadManager', NotepadManager);
+
+    this.managerFactory.registerManager('shareManager', ShareManager, {
+      dependencies: ['app'],
+      loadData: false
+    });
+
+    this.managerFactory.registerManager('moodTracker', MoodTracker);
+
+    // Register waifu sprite element as a service
+    this.container.register('waifuSprite', () => document.getElementById('waifu-sprite'));
   }
 
   async initialize() {
     try {
-      this.logger.log('Initializing Waifu AI Application...');
+      this.container.get('logger').log('Initializing Waifu AI Application...');
       
       // Initialize PanelManager first (for UI setup)
       if (window.PanelManager) {
@@ -105,62 +157,52 @@ export class WaifuApp {
         window.PanelManager.setupKeyboardShortcuts();
       }
       
-      // Initialize UI Manager
-      this.uiManager.initialize();
+      // Initialize all managers using the factory
+      this.managers = await this.managerFactory.initializeAll();
       
-      // Load settings first
-      await this.settingsManager.load();
+      // Store manager references for backward compatibility
+      this.uiManager = this.managers.uiManager;
+      this.settingsManager = this.managers.settingsManager;
+      this.affectionManager = this.managers.affectionManager;
+      this.todoManager = this.managers.todoManager;
+      this.pomodoroManager = this.managers.pomodoroManager;
+      this.waifuManager = this.managers.waifuManager;
+      this.tooltipManager = this.managers.tooltipManager;
+      this.interactionManager = this.managers.interactionManager;
+      this.notepadManager = this.managers.notepadManager;
+      this.shareManager = this.managers.shareManager;
+      this.moodTracker = this.managers.moodTracker;
+      
+      // Get service references
+      this.quoteService = this.container.get('quoteService');
+      this.contextAwareQuotes = this.container.get('contextAwareQuotes');
       
       // Initialize services
       await this.quoteService.initialize();
-      
-      // Load data
-      await Promise.all([
-        this.affectionManager.load(),
-        this.todoManager.load(),
-        this.pomodoroManager.load(),
-        this.notepadManager.load(),
-        this.moodTracker.initialize()
-      ]);
-      
-      // Initialize notepad manager
-      await this.notepadManager.initialize();
+      await this.contextAwareQuotes.initialize();
       
       // Initialize mood tracker UI
       this.initializeMoodTracker();
       
-      // Initialize share manager
-      this.shareManager.initialize();
-      
-      // Set up settings integration (this applies loaded settings)
+      // Set up post-initialization integrations
+      this.setupEventHandlers();
       this.setupSettingsIntegration();
-      
-      // Start waifu cycling - DISABLED
-      // this.waifuManager.startCycling();
-      // Ensure cycling is stopped
-      this.waifuManager.stopCycling();
-      
-      // Note: Quote system is started conditionally in setupSettingsIntegration() -> applySettings()
-      // Don't start it here unconditionally
-      
-      // Set up storage sync
       this.setupStorageSync();
-      
-      // Set up keyboard shortcuts
       this.setupKeyboardShortcuts();
+      
+      // Ensure cycling is stopped (as per existing behavior)
+      this.waifuManager.stopCycling();
       
       // Check storage usage
       await this.checkStorageUsage();
       
-      // Initialize context-aware quotes
-      await this.contextAwareQuotes.initialize();
-      
       // Request notification permission for Pomodoro
       await this.pomodoroManager.requestNotificationPermission();
       
-      this.logger.log('Application initialized successfully');
+      this.container.get('logger').log('Application initialized successfully');
     } catch (error) {
-      this.logger.error(`Initialization failed: ${error.message}`);
+      this.container.get('logger').error(`Initialization failed: ${error.message}`);
+      throw error;
     }
   }
 
@@ -185,7 +227,7 @@ export class WaifuApp {
     
     // Initialize interaction manager with waifu container
     const waifuContainer = document.getElementById('waifu-container');
-    if (waifuContainer) {
+    if (waifuContainer && this.interactionManager) {
       this.interactionManager.initialize(waifuContainer, (reward) => {
         this.affectionManager.increase(reward, waifuContainer);
         this.updateWaifuMood();
@@ -194,38 +236,44 @@ export class WaifuApp {
     }
     
     // Still allow direct clicking but with no reward (just animation)
-    this.waifuManager.addClickHandler(() => {
-      // Just show animation and quote, no affection gain
-      this.showEventQuote('waifuClick');
-    });
+    if (this.waifuManager) {
+      this.waifuManager.addClickHandler(() => {
+        // Just show animation and quote, no affection gain
+        this.showEventQuote('waifuClick');
+      });
+    }
     
     // Override todo manager event handlers to include affection logic
-    this.todoManager.onToggle = (index) => {
-      const completedTask = this.todoManager.toggle(index);
-      if (completedTask) {
-        this.affectionManager.increase(
-          CONFIG.AFFECTION.TASK_COMPLETION,
-          document.getElementById('waifu-container')
-        );
-        // Show task completion quote
-        this.showEventQuote('taskComplete');
-      }
-      this.updateWaifuMood();
-    };
-    
-    this.todoManager.onDelete = (index) => {
-      this.todoManager.delete(index);
-      this.updateWaifuMood();
-    };
+    if (this.todoManager) {
+      this.todoManager.onToggle = (index) => {
+        const completedTask = this.todoManager.toggle(index);
+        if (completedTask) {
+          this.affectionManager.increase(
+            CONFIG.AFFECTION.TASK_COMPLETION,
+            document.getElementById('waifu-container')
+          );
+          // Show task completion quote
+          this.showEventQuote('taskComplete');
+        }
+        this.updateWaifuMood();
+      };
+      
+      this.todoManager.onDelete = (index) => {
+        this.todoManager.delete(index);
+        this.updateWaifuMood();
+      };
+    }
     
     // Set up Pomodoro event handlers
-    this.pomodoroManager.onSessionComplete = (state) => {
-      this.handlePomodoroSessionComplete(state);
-    };
-    
-    this.pomodoroManager.onStateChange = (action, state) => {
-      this.handlePomodoroStateChange(action, state);
-    };
+    if (this.pomodoroManager) {
+      this.pomodoroManager.onSessionComplete = (state) => {
+        this.handlePomodoroSessionComplete(state);
+      };
+      
+      this.pomodoroManager.onStateChange = (action, state) => {
+        this.handlePomodoroStateChange(action, state);
+      };
+    }
   }
 
   addTodo() {
@@ -701,30 +749,29 @@ export class WaifuApp {
     }
   }
 
-  destroy() {
-    this.waifuManager.stopCycling();
+  async destroy() {
     this.stopQuoteSystem();
     
-    if (this.tooltipManager) {
-      this.tooltipManager.destroy();
+    // Use manager factory for standardized cleanup
+    if (this.managers) {
+      await this.managerFactory.destroyAll(this.managers);
     }
     
-    if (this.pomodoroManager) {
-      this.pomodoroManager.destroy();
-    }
-    
-    if (this.interactionManager) {
-      this.interactionManager.cleanup();
-    }
-    
-    if (this.notepadManager) {
-      this.notepadManager.cleanup();
-    }
-    
-    if (this.shareManager) {
-      this.shareManager.cleanup();
-    }
-    
-    this.logger.log('Application destroyed');
+    this.container.get('logger').log('Application destroyed');
+  }
+
+  /**
+   * Get debug information about all managers
+   * @returns {Object} Debug information
+   */
+  getDebugInfo() {
+    return {
+      managers: this.managerFactory.getManagerStatuses(this.managers),
+      services: Array.from(this.container.services.keys()),
+      config: {
+        quoteSystemRunning: !!this.quoteTimer,
+        autoQuotesEnabled: CONFIG.TOOLTIP.AUTO_ENABLED
+      }
+    };
   }
 }

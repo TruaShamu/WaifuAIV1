@@ -3,19 +3,20 @@
  * Manages timed interaction opportunities with the waifu
  */
 
+import { BaseManager } from './BaseManager.js';
 import { AnimationService } from '../services/AnimationService.js';
 
-export class InteractionManager {
-    constructor(logger, config = {}) {
-        this.logger = logger;
+export class InteractionManager extends BaseManager {
+    constructor(dependencies) {
+        super(dependencies);
         
-        // Configuration with defaults
+        // Configuration with defaults from CONFIG or override
+        const configOverride = dependencies.configOverride || {};
         this.config = {
-            interactionInterval: config.interactionInterval || 5 * 60 * 1000, // 5 minutes default
-            interactionReward: config.interactionReward || 10, // Higher reward for timed interactions
-            indicatorDuration: config.indicatorDuration || 30 * 1000, // 30 seconds to interact
-            maxMissedInteractions: config.maxMissedInteractions || 3,
-            ...config
+            interactionInterval: configOverride.interactionInterval || this.config?.INTERACTION?.INTERVAL || 5 * 60 * 1000,
+            interactionReward: configOverride.interactionReward || this.config?.INTERACTION?.REWARD || 10,
+            indicatorDuration: configOverride.indicatorDuration || this.config?.INTERACTION?.INDICATOR_DURATION || 30 * 1000,
+            maxMissedInteractions: configOverride.maxMissedInteractions || this.config?.INTERACTION?.MAX_MISSED || 3
         };
         
         // State
@@ -35,7 +36,21 @@ export class InteractionManager {
     }
 
     /**
-     * Initialize the interaction manager
+     * Initialization logic
+     */
+    async onInitialize() {
+        this.logger.log('Interaction manager ready');
+    }
+
+    /**
+     * Cleanup logic
+     */
+    async onDestroy() {
+        this.cleanup();
+    }
+
+    /**
+     * Initialize the interaction manager (backward compatibility)
      * @param {HTMLElement} waifuContainer - The waifu container element
      * @param {Function} onInteraction - Callback when interaction occurs
      */
