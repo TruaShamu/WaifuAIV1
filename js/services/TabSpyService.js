@@ -13,48 +13,44 @@ export class TabSpyService {
     this.isEnabled = true;
     
     // Site categorization for context-aware reactions
-    this.siteCategories = {
-      // Productivity sites
-      productivity: [
-        'github.com', 'gitlab.com', 'stackoverflow.com', 'codepen.io',
-        'jsfiddle.net', 'repl.it', 'codesandbox.io', 'notion.so',
-        'trello.com', 'asana.com', 'slack.com', 'discord.com',
-        'docs.google.com', 'office.com', 'figma.com', 'canva.com'
-      ],
+    // Will be loaded from external JSON file
+    this.siteCategories = {};
+    this.siteCategoriesLoaded = false;
+  }
+
+  /**
+   * Load site categories from JSON file
+   */
+  async loadSiteCategories() {
+    try {
+      const response = await fetch(chrome.runtime.getURL('site-categories.json'));
+      if (!response.ok) {
+        throw new Error(`Failed to load site categories: ${response.status}`);
+      }
       
-      // Learning/Educational
-      learning: [
-        'coursera.org', 'udemy.com', 'edx.org', 'khanacademy.org',
-        'freecodecamp.org', 'codecademy.com', 'pluralsight.com',
-        'lynda.com', 'youtube.com/watch', 'wikipedia.org',
-        'mdn.mozilla.org', 'w3schools.com'
-      ],
-      
-      // Social Media (potentially distracting)
-      social: [
-        'facebook.com', 'twitter.com', 'instagram.com', 'tiktok.com',
-        'reddit.com', 'linkedin.com', 'snapchat.com', 'pinterest.com',
-        'tumblr.com', 'twitch.tv'
-      ],
-      
-      // Entertainment
-      entertainment: [
-        'netflix.com', 'hulu.com', 'disney.com', 'amazon.com/prime',
-        'youtube.com', 'spotify.com', 'apple.com/music',
-        'crunchyroll.com', 'funimation.com'
-      ],
-      
-      // Shopping
-      shopping: [
-        'amazon.com', 'ebay.com', 'etsy.com', 'walmart.com',
-        'target.com', 'bestbuy.com', 'newegg.com'
-      ],
-      
-      // News
-      news: [
-        'cnn.com', 'bbc.com', 'reuters.com', 'npr.org',
-        'nytimes.com', 'washingtonpost.com', 'guardian.com'
-      ]
+      this.siteCategories = await response.json();
+      this.siteCategoriesLoaded = true;
+      this.logger.log('🕵️ Site categories loaded from configuration file');
+    } catch (error) {
+      this.logger.error(`Failed to load site categories: ${error.message}`);
+      // Fallback to default categories
+      this.siteCategories = this.getDefaultCategories();
+      this.siteCategoriesLoaded = true;
+      this.logger.warn('🕵️ Using default site categories as fallback');
+    }
+  }
+
+  /**
+   * Get default site categories as fallback
+   */
+  getDefaultCategories() {
+    return {
+      productivity: ['github.com', 'stackoverflow.com', 'codepen.io'],
+      learning: ['freecodecamp.org', 'mdn.mozilla.org', 'youtube.com/watch'],
+      social: ['facebook.com', 'twitter.com', 'reddit.com'],
+      entertainment: ['netflix.com', 'youtube.com', 'spotify.com'],
+      shopping: ['amazon.com', 'ebay.com'],
+      news: ['cnn.com', 'bbc.com', 'reuters.com']
     };
   }
 
@@ -69,6 +65,9 @@ export class TabSpyService {
     }
 
     try {
+      // Load site categories first
+      await this.loadSiteCategories();
+
       // Listen for tab changes
       chrome.tabs.onActivated.addListener((activeInfo) => {
         this.handleTabChange(activeInfo.tabId);
@@ -169,6 +168,11 @@ export class TabSpyService {
    * Categorize URL based on domain
    */
   categorizeUrl(url) {
+    // Wait for categories to be loaded
+    if (!this.siteCategoriesLoaded) {
+      return 'unknown';
+    }
+
     try {
       const domain = new URL(url).hostname.toLowerCase();
       
@@ -330,5 +334,52 @@ export class TabSpyService {
     this.isEnabled = true;
     this.getCurrentTab();
     this.logger.log('🕵️ Tab spy enabled');
+  }
+
+  /**
+   * Add a custom site to a category
+   * @param {string} category - The category to add the site to
+   * @param {string} domain - The domain to add (e.g., 'example.com')
+   */
+  addSiteToCategory(category, domain) {
+    if (!this.siteCategories[category]) {
+      this.siteCategories[category] = [];
+    }
+    
+    if (!this.siteCategories[category].includes(domain)) {
+      this.siteCategories[category].push(domain);
+      this.logger.log(`🕵️ Added ${domain} to ${category} category`);
+    }
+  }
+
+  /**
+   * Remove a site from a category
+   * @param {string} category - The category to remove the site from
+   * @param {string} domain - The domain to remove
+   */
+  removeSiteFromCategory(category, domain) {
+    if (this.siteCategories[category]) {
+      const index = this.siteCategories[category].indexOf(domain);
+      if (index > -1) {
+        this.siteCategories[category].splice(index, 1);
+        this.logger.log(`🕵️ Removed ${domain} from ${category} category`);
+      }
+    }
+  }
+
+  /**
+   * Get all current site categories
+   */
+  getSiteCategories() {
+    return { ...this.siteCategories };
+  }
+
+  /**
+   * Update site categories with a new configuration
+   * @param {Object} newCategories - New categories object
+   */
+  updateSiteCategories(newCategories) {
+    this.siteCategories = { ...newCategories };
+    this.logger.log('🕵️ Site categories updated');
   }
 }

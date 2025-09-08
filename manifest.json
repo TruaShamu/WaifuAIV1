@@ -12,5 +12,11 @@
   },
   "side_panel": {
     "default_path": "sidebar.html"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["site-categories.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

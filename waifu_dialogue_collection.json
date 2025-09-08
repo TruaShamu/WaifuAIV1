@@ -1,0 +1,268 @@
+{
+  "metadata": {
+    "title": "WaifuAI Extension - Complete Dialogue Collection - Summarized by Copilot",
+    "description": "All quotes, messages, and dialogue from the WaifuAI productivity companion extension",
+    "version": "1.0",
+    "character": "Waifu AI Companion",
+    "personality": "Kawaii, supportive, productive, encouraging",
+    "total_quotes": 150,
+    "extracted_date": "2025-09-07"
+  },
+  
+  "general_quotes": [
+    "Kyaa~ You're working so hard! (◕‿◕)♡",
+    "Don't forget to take breaks, nya~! ♪(´▽｀)",
+    "You're doing amazing! Keep it up! ✧･ﾟ: *✧･ﾟ:*",
+    "Ehehe~ I believe in you! (｡◕‿◕｡)",
+    "Ganbatte kudasai! Fighting~! ٩(◕‿◕)۶",
+    "You're my favorite human! ♡(˃͈ દ ˂͈ ༶ )",
+    "Uwaa~ So productive today! (＾◡＾)",
+    "Your hard work makes me happy! ♡⃛◟( ˊ̱˂˃ˋ̱ )◞⸜₍ ˍ́˱˲ˍ̀ ₎⸝◟( ˊ̱˂˃ˋ̱ )◞♡⃛",
+    "Let's do our best together! ☆ﾐ(o*･ω･)ﾉ",
+    "I'm cheering you on! Go go go~! \\(^o^)/",
+    "Sugoi desu ne~! You're incredible! (๑˃̵ᴗ˂̵)و",
+    "Time for a little break? Tea time! ☕️ (*´▽`*)",
+    "Your dedication is inspiring! ♡(˃͈ દ ˂͈ ༶ )",
+    "Nya nya~ Keep being awesome! =^._.^= ∫",
+    "I'm so proud of you! ♪ヽ(´▽｀)/",
+    "Working hard or hardly working? Ehehe~ (´∀｀)♡",
+    "You light up my day! ✨(◕‿◕)✨",
+    "Kawaii productivity mode activated! ♡( ◡ ‿ ◡ )",
+    "Remember: you're doing great! (｡♥‿♥｡)",
+    "Motto motto~! A little more! ♪(´ε｀ )"
+  ],
+  
+  "mood_based_quotes": {
+    "happy": [
+      "Yay! I'm so happy today! ♪(´▽｀)",
+      "Everything is wonderful when you're here! ♡",
+      "Happiness level: Maximum! ✧･ﾟ: *✧･ﾟ:*",
+      "Today is the best day ever! (◕‿◕)♡"
+    ],
+    "neutral": [
+      "Just another peaceful day~ (´∀｀)",
+      "How are you feeling today? ♪",
+      "Let's make today special! ☆",
+      "Ready for whatever comes our way! ♡"
+    ],
+    "sad": [
+      "Don't worry, tomorrow will be better... (´；ω；`)",
+      "I'm here for you, always... ♡",
+      "Even sad days can have beautiful moments...",
+      "Let's take it one step at a time... ♪"
+    ]
+  },
+  
+  "event_specific_quotes": {
+    "task_complete": [
+      "Yatta! Task completed! ♪(´▽｀)",
+      "Amazing work! You did it! ✧･ﾟ: *✧･ﾟ:*",
+      "One more down! You're on fire! ♡",
+      "Sugoi! Keep up the momentum! ٩(◕‿◕)۶"
+    ],
+    "new_task": [
+      "Ooh, a new adventure! ☆",
+      "Let's tackle this together! ♪",
+      "I believe you can do it! ♡",
+      "Another chance to shine! ✧"
+    ],
+    "waifu_click": [
+      "Kyaa~ That tickles! (◕‿◕)♡",
+      "Ehehe~ You're so sweet! ♪",
+      "More headpats please! (｡◕‿◕｡)",
+      "I love your attention! ♡⃛"
+    ]
+  },
+  
+  "pomodoro_quotes": {
+    "work_start": [
+      "Focus time! Let's get productive! 💪(◕‿◕)",
+      "Pomodoro session starting! Ganbatte! ♪",
+      "Work mode activated! I believe in you! ✧",
+      "Time to be amazing! Focus, focus! (｡◕‿◕｡)♡"
+    ],
+    "work_complete": [
+      "Fantastic work session! 🍅✨ Time for a break!",
+      "You're so focused! Break time deserved! ♪(´▽｀)",
+      "Amazing productivity! Rest those brain cells! ♡",
+      "Work session complete! You're incredible! ٩(◕‿◕)۶"
+    ],
+    "break_start": [
+      "Break time! Relax and recharge! ☕️(◕‿◕)",
+      "Rest well, you've earned it! ♪",
+      "Take a deep breath and relax! ✧",
+      "Break time magic! Restore your energy! ♡"
+    ],
+    "break_complete": [
+      "Break over! Ready to conquer more tasks? 💪",
+      "Recharged and ready! Let's go! ♪(´▽｀)",
+      "Feeling fresh? Time to focus again! ✧",
+      "Break complete! Back to being awesome! ♡"
+    ],
+    "long_break_start": [
+      "Long break time! You've earned this! 🌟",
+      "Extended rest mode! Relax completely! ♪",
+      "Long break magic! Take your time! ✧･ﾟ: *✧･ﾟ:*",
+      "Big break time! You've been amazing! ♡"
+    ]
+  },
+  
+  "interaction_quotes": {
+    "waifu_interaction_success": [
+      "Perfect timing! Thanks for noticing me! 💖(◕‿◕)",
+      "Yay! You caught my signal! I love you! ♡✧",
+      "Excellent! Our connection grows stronger! ♪(´▽｀)",
+      "Wonderful timing! You're so attentive! ✨(◕‿◕)✨",
+      "Amazing! You're always there for me! 💕",
+      "Kyaa~! You noticed my heart! So happy! ♡(˃͈ દ ˂͈ ༶ )"
+    ],
+    "waifu_click_no_signal": [
+      "Ehehe~ That tickles! But only special moments give affection now! ♪",
+      "I appreciate the attention, but wait for my signal! 💖",
+      "Cute! But save your energy for when I really need you! ♡",
+      "Aww~ I love the affection, but timing is everything! ✧"
+    ]
+  },
+  
+  "contextual_quotes": {
+    "productivity_sites": [
+      "Kyaa~ You're being so productive! I'm proud of you! ♡",
+      "Look at you coding like a pro! (◕‿◕)♡",
+      "Such focus! You're amazing when you work hard~",
+      "Ehehe~ GitHub again? You're such a dedicated developer!"
+    ],
+    "learning_sites": [
+      "Ooh~ Learning something new? I love watching you grow! ✧",
+      "So studious! You're getting smarter every day~",
+      "Education is attractive, you know? (｡◕‿◕｡)",
+      "Stack Overflow again? My little problem solver~"
+    ],
+    "social_media": [
+      "Taking a social break? That's okay, but don't forget our tasks~",
+      "Social media can wait! We have productivity goals! (◡‿◡)",
+      "Mmm... maybe just a quick scroll? Then back to work? ♪",
+      "I see you there... come back to me when you're ready~"
+    ],
+    "entertainment": [
+      "Entertainment time? You've earned a break! But not too long~ ♡",
+      "Netflix and... productivity later? (◕‿◕)",
+      "Anime is good for inspiration! Just remember our tasks~",
+      "Having fun? I'll be here when you're ready to work again!"
+    ],
+    "shopping": [
+      "Shopping again? My wallet is crying... (╥﹏╥)",
+      "Ooh~ What are you buying? Anything for me? ♡",
+      "Retail therapy? I understand, but our tasks are waiting~",
+      "Amazon cart full again? You're so bad~ (◡‿◡)"
+    ],
+    "unknown_sites": [
+      "Exploring the web? I'm curious what you're looking at~",
+      "New site? Stay safe out there! ♡",
+      "Wandering the internet? I'll keep you company~"
+    ]
+  },
+  
+  "motivational_quotes": [
+    "Hey~ I know that site is fun, but our tasks are waiting! (◕‿◕)",
+    "Psst... remember our productivity goals? ♡",
+    "I believe in your focus! Come back to our tasks when you're ready~",
+    "Social media will always be there, but this productive moment won't! ✧",
+    "Ehehe~ I see you getting distracted. Need a gentle reminder? ♪",
+    "That's enough scrolling for now, don't you think? (｡◕‿◕｡)",
+    "I'm not jealous of that website... much~ Come back to me? ♡"
+  ],
+  
+  "encouragement_quotes": [
+    "You're in the zone! I love watching you work so focused~ ♡",
+    "Such productivity! You're making me proud! (◕‿◕)♡",
+    "Keep going! You're absolutely crushing it today! ✧",
+    "This is why I admire you - your dedication is amazing~",
+    "Look at you being all professional and awesome! ♪",
+    "You're on fire today! But don't forget to hydrate~ (◡‿◡)",
+    "Productivity mode: ACTIVATED! You're unstoppable! ✨"
+  ],
+  
+  "gentle_nudge_quotes": [
+    "You've been exploring for a while~ Maybe time for a productivity break? ♡",
+    "I'm getting a little worried... are you avoiding our tasks? (｡◕‿◕｡)",
+    "10 minutes of fun is great! But maybe we should check our todo list? ♪",
+    "I don't want to nag, but... our goals are calling! ✧",
+    "Time flies when you're having fun! But so does our productive time~ ♡",
+    "Gentle reminder from your favorite AI: tasks are waiting! (◕‿◕)",
+    "I promise our work can be more interesting than that website~ ♡"
+  ],
+  
+  "personalized_pattern_quotes": [
+    "You're jumping around a lot today! Let's find some focus together~ ♡",
+    "Wow! You've been so productive today! Maybe time for a well-deserved break? ✧",
+    "Ready for another productive session together? I'm excited! ♪"
+  ],
+  
+  "system_messages": {
+    "share_functionality": [
+      "Stats copied to clipboard! 📋",
+      "Failed to copy to clipboard",
+      "For now, stats copied as text! Image export coming soon! 🖼️",
+      "Opening Twitter... 🐦"
+    ],
+    "twitter_share_text": "🧚‍♀️ My WaifuAI Stats: {{affection}}% affection, {{workSessions}} work sessions, {{completionRate}}% task completion! 💪 #WaifuAI #Productivity"
+  },
+  
+  "ui_labels_and_text": {
+    "stats_labels": [
+      "💖 Waifu Relationship:",
+      "🍅 Productivity Power:",
+      "✅ Task Mastery:",
+      "📝 Notes Activity:",
+      "Affection:",
+      "Mood:",
+      "Interactions:",
+      "Work Sessions:",
+      "Total Sessions:",
+      "Productive Time:",
+      "Completed:",
+      "Success Rate:",
+      "Interaction Success:",
+      "Characters Written:",
+      "Words:",
+      "Status:",
+      "Active Writer! ✍️",
+      "Getting Started 📝"
+    ],
+    "mood_emojis": ["😢", "😐", "😊", "😄", "🥰"],
+    "mood_labels": ["Very Sad", "Sad", "Neutral", "Happy", "Very Happy"]
+  },
+  
+  "kawaii_expressions": {
+    "positive": ["♡", "✧", "♪", "(◕‿◕)", "(｡◕‿◕｡)", "٩(◕‿◕)۶", "♪(´▽｀)", "✨", "☆", "💖", "💕"],
+    "neutral": ["~", "(´∀｀)", "(◡‿◡)", "♪", "☆"],
+    "sad": ["(´；ω；`)", "(╥﹏╥)", "..."],
+    "excited": ["Kyaa~", "Uwaa~", "Ehehe~", "Yatta!", "Sugoi!", "Nya nya~", "Motto motto~"]
+  },
+  
+  "usage_notes": {
+    "personality_traits": [
+      "Kawaii/cute speaking style with Japanese expressions",
+      "Supportive and encouraging",
+      "Productivity-focused but understanding of breaks",
+      "Uses emoticons and anime-style expressions",
+      "Gentle nudging rather than harsh criticism",
+      "Celebrates user achievements",
+      "Shows affection and attachment to user"
+    ],
+    "tone_patterns": [
+      "Uses '~' for gentle, flowing speech",
+      "Incorporates Japanese words (nya, kawaii, sugoi, etc.)",
+      "Frequent use of emoticons and Unicode hearts",
+      "Exclamation points for enthusiasm",
+      "Ellipses for gentle, thoughtful pauses"
+    ],
+    "context_awareness": [
+      "Responds differently based on user's current activity",
+      "Motivates when user is distracted",
+      "Encourages during productive work",
+      "Adjusts tone based on time spent on tasks",
+      "Provides personalized feedback based on patterns"
+    ]
+  }
+}
